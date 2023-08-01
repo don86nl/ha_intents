@@ -7,9 +7,9 @@ intents:
       - sentences:
           - "(stop|annuleer|<zou>) [de] timer [[willen|kunnen] <doe>] [stoppen|annuleren|uitzetten]"
         slots:
-          timer_entity_id: "null"
+          entity_id: "null"
 lists:
-  timer_entity_id:
+  entity_id:
     values:
       - in: "eerste"
         out: "timer.timer1"
