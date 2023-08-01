@@ -1,0 +1,23 @@
+language: "nl"
+intents:
+  TimerDuration:
+    data:
+      - sentences:
+          - "(hoe lang|hoeveel tijd) nog op de {timer} timer"
+          - "hoe lang duurt de {timer} timer nog"
+      - sentences:
+          - "(hoe lang|hoeveel tijd) nog op de timer[s]"
+          - "hoe lang [duurt|duren] de timer[s] nog"
+        slots:
+          timer: "timer.timer0"
+lists:
+  timer:
+    values:
+      - in: "eerste"
+        out: "timer.timer1"
+      - in: "tweede"
+        out: "timer.timer2"
+      - in: "derde"
+        out: "timer.timer3"
+      - in: "alle"
+        out: "timer.timer1, timer.timer2, timer.timer3"
