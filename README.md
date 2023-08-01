@@ -1,4 +1,4 @@
-# ha_intent_timers
+# Home Assistant Assist Timer Functionality.
 This script adds timer functionality to Home Assistant's Assist.
 
 # Why scripts?
