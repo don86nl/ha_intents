@@ -1,0 +1,74 @@
+language: "nl"
+intents:
+  TimerStart:
+    data:
+#Alle tijden
+      - sentences:
+          - "(start|zet|<zou>) [een] timer (voor|van) {hours} (uur|uren) [en] {minutes} (minuut|minuten) [en] {seconds} (seconde|seconden) [[willen|kunnen] <doe>] [starten]"
+#Alleen uur
+      - sentences:
+          - "(start|zet|<zou>) [een] timer (voor|van) {hours} (uur|uren) [[willen|kunnen] <doe>] [starten]"
+        slots:
+          seconds: 0
+          minutes: 0
+#Alleen minuut
+      - sentences:
+          - "(start|zet|<zou>) [een] timer (voor|van) {minutes} (minuut|minuten) [[willen|kunnen] <doe>] [starten]"
+        slots:
+          seconds: 0
+          hours: 0
+#Alleen seconde
+      - sentences:
+          - "(start|zet|<zou>) [een] timer (voor|van) {seconds} (seconde|seconden) [[willen|kunnen] <doe>] [starten]"
+        slots:
+          minutes: 0
+          hours: 0
+#Geen uur, wel minuten en seconden
+      - sentences:
+          - "(start|zet|<zou>) [een] timer (voor|van) {minutes} (minuut|minuten) [en] {seconds} (seconde|seconden) [[willen|kunnen] <doe>] [starten]"
+        slots:
+          hours: 0          
+#Geen seconden, wel uren en minuten
+      - sentences:
+          - "(start|zet|<zou>) [een] timer (voor|van) {hours} (uur|uren) [en] {minutes} (minuut|minuten) [[willen|kunnen] <doe>] [starten]"
+        slots:
+          seconds: 0
+#Halven
+      - sentences:
+          - "(start|zet|<zou>) [een] timer (voor|van) [{minutes}][ ]([en] [een] half | [en] [een] halve) minuut [[willen|kunnen] <doe>] [starten]"
+          - "(start|zet|<zou>) [een] timer (voor|van) (0,5|0.5) minuut [[willen|kunnen] <doe>] [starten]"
+        slots:
+          hours: 0
+          seconds: 30
+      - sentences:
+          - "(start|zet|<zou>) [een] timer (voor|van) (anderhalve|anderhalf) minuut [[willen|kunnen] <doe>] [starten]"
+          - "(start|zet|<zou>) [een] timer (voor|van) (1,5|1.5) minuut [[willen|kunnen] <doe>] [starten]"
+        slots:
+          hours: 0
+          seconds: 30
+          minutes: 1
+      - sentences:
+          - "(start|zet|<zou>) [een] timer (voor|van) [{hours}][ ]([en] [een] half | [en] [een] halve) uur [[willen|kunnen] <doe>] [starten]"
+        slots:
+          minutes: 30
+          seconds: 0
+      - sentences:
+          - "(start|zet|<zou>) [een] timer (voor|van) (anderhalve|anderhalf) uur [[willen|kunnen] <doe>] [starten]"
+          - "(start|zet|<zou>) [een] timer (voor|van) (1,5|1.5) uur [[willen|kunnen] <doe>] [starten]"
+        slots:
+          hours: 1
+          seconds: 0
+          minutes: 30
+lists:
+  seconds:
+    range:
+      from: 0
+      to: 120    
+  minutes:
+    range:
+      from: 0
+      to: 120
+  hours:
+    range:
+      from: 0
+      to: 24

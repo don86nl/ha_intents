@@ -1,0 +1,21 @@
+language: "nl"
+intents:
+  TimerStop:
+    data:
+      - sentences:
+          - "(stop|annuleer|<zou>) [de] {timer_entity_id} timer[s] [[willen|kunnen] <doe>] [stoppen|annuleren|uitzetten]"
+      - sentences:
+          - "(stop|annuleer|<zou>) [de] timer [[willen|kunnen] <doe>] [stoppen|annuleren|uitzetten]"
+        slots:
+          timer_entity_id: "null"
+lists:
+  timer_entity_id:
+    values:
+      - in: "eerste"
+        out: "timer.timer1"
+      - in: "tweede"
+        out: "timer.timer2"
+      - in: "derde"
+        out: "timer.timer3"
+      - in: "alle"
+        out: "timer.timer1, timer.timer2, timer.timer3"
