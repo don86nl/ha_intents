@@ -3,15 +3,15 @@ intents:
   TimerDuration:
     data:
       - sentences:
-          - "(hoe lang|hoeveel tijd) nog op de {timer} timer"
-          - "hoe lang duurt de {timer} timer nog"
+          - "(hoe lang|hoeveel tijd) nog op de {entity_id} timer"
+          - "hoe lang duurt de {entity_id} timer nog"
       - sentences:
           - "(hoe lang|hoeveel tijd) nog op de timer[s]"
           - "hoe lang [duurt|duren] de timer[s] nog"
         slots:
-          timer: "timer.timer0"
+          entity_id: "null"
 lists:
-  timer:
+  entity_id:
     values:
       - in: "eerste"
         out: "timer.timer1"
@@ -19,5 +19,5 @@ lists:
         out: "timer.timer2"
       - in: "derde"
         out: "timer.timer3"
-      - in: "alle"
+      - in: "(alle|iedere)"
         out: "timer.timer1, timer.timer2, timer.timer3"
