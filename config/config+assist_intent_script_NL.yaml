@@ -1,0 +1,115 @@
+  TimerStart:
+    speech:
+      text: >
+        {{ (["Geen probleem. ", "Goed. ", "Natuurlijk. ", ""] | random) + (["Ik start de timer voor ", "Timer gestart voor ", "Ik zet een timer voor ", "Timer geactiveerd voor "] | random)}}{% if (hours | int(default=0)) == 1 %}{{ (hours | int)}} uur{% elif (hours | int(default=0)) > 1 %}{{ (hours | int)}} uren{% endif %}{% if (hours | int(default=0)) > 0 and ((minutes | int(default=0)) > 0 or (seconds | int(default=0)) > 0) %} en {% endif %}{% if (minutes | int(default=0)) == 1 %}{{ (minutes | int)}} minuut{% elif (minutes | int(default=0)) > 1 %}{{ (minutes | int)}} minuten{% endif %}{% if (minutes | int(default=0)) > 0 and (seconds | int(default=0)) > 0 %} en {% endif %}{% if (seconds | int(default=0)) == 1 %}{{ (seconds | int)}} seconde{% elif (seconds | int(default=0)) > 1 %}{{ (seconds | int)}} seconden{% endif %}.
+    action:
+      service: script.timer_start
+      data_template:
+        duration: "{{hours | int(default=0)}}:{{ minutes | int(default=0) }}:{{ seconds | int(default=0) }}"
+        entity_id: >
+          {% if states('timer.timer1') != 'active' and states('timer.timer1') != 'paused' %} timer1
+          {% elif states('timer.timer2') != 'active' and states('timer.timer2') != 'paused' %} timer2
+          {% else %} timer3{% endif%}
+
+  TimerStop:
+    speech:
+      text: >       
+        {% set timer_amount = states.timer|selectattr('state','eq','active')|list|length %}
+        {% if timer_amount == 0 %}
+        Er zijn momenteel geen timers actief.
+        {% elif (timer_amount == 1 and entity_id != 'null') or states('timer.' + entity_id) == 'active'%}
+        {{ (["Akkoord. ", "Begrepen. ", "Goed. ", ""] | random) }}{{ (["Geannuleerd.", "Timer geannuleerd.", "Gestopt.", "Timer gestopt.", "Gedeactiveerd.", "Timer gedeactiveerd.", "Timer uitgeschakeld.", "Uitgeschakeld."] | random) }}
+        {% else %}
+          {% if states('timer.' + entity_id) != 'active' and entity_id != 'null' %}Deze timer is momenteel niet actief. {% 
+          endif %}{%
+          if timer_amount == 1 %}Er is momenteel 1 timer actief. {% 
+          else %}Er zijn momenteel {{ timer_amount }} timers actief. {% endif 
+          %}{{ (["Specificeer alstublieft welke timer u wilt stoppen.", "Geef alstublieft aan welke timer u wilt stoppen.", "Benoem alstublieft welke timer u wilt stoppen.", ""] | random) }}{% endif %}
+    action:
+      service: script.timer_stop
+      data_template:
+        entity_id: "{{ entity_id }}"
+               
+  TimerDuration:
+    speech:
+      text: >       
+        {% set timer_amount = states.timer|selectattr('state','eq','active')|list|length %}
+        {% if timer_amount == 0 %}
+        Er zijn momenteel geen timers actief.
+        {% else %}
+          {% if timer_amount == 1 and entity_id == 'null' %}Er is momenteel 1 timer actief. {% 
+             elif entity_id == 'null' %}Er zijn momenteel {{ timer_amount}} timers actief. {% endif %}{% 
+            
+            if states.timer.timer1.state == 'active' and (entity_id == 'timer.timer1' or entity_id == 'null') %}{% 
+              set duration = "" %}{% 
+              if states.timer.timer1.attributes.duration[:2] | int(default=0) > 9 %}{%
+              set hr = states.timer.timer1.attributes.duration[:2] %}{% else %}{%
+              set hr = states.timer.timer1.attributes.duration[:1] %}{% endif %}{%
+              if states.timer.timer1.attributes.duration[3:][:2] | int(default=0) > 9 %}{%
+              set min = states.timer.timer1.attributes.duration[3:][:2] %}{% else %}{%
+              set min = states.timer.timer1.attributes.duration[3:][:1] %}{% endif %}{%
+              if states.timer.timer1.attributes.duration[5:] | int(default=0) > 9 %}{%
+              set sec = states.timer.timer1.attributes.duration[5:] %}{% else %}{%
+              set sec = states.timer.timer1.attributes.duration[6:] %}{% endif %}{%
+              
+              if hr | int(default=0) > 0 %}{% set duration = duration + hr + " uur " %}{% endif %}{%
+              if min | int(default=0) == 1 %}{% set duration = duration + min + " minuut " %}{%
+              elif min | int(default=0) > 1 %}{% set duration = duration + min + " minuten " %}{% endif %}{%
+              if sec | int(default=0) == 1 %}{% set duration = duration + sec + " seconde " %}{%
+              elif sec | int(default=0) > 1 %}{% set duration = duration + sec + " seconden " %}{% endif %}De eerste timer van {{ duration }}is actief met nog {%
+              if (states['timer.timer1'].attributes.duration != "none") or (states['timer.timer1'].state == "active") -%}{%
+              if (as_datetime(state_attr('timer.timer1', 'finishes_at')) - now()).total_seconds() | timestamp_custom('%H', false) | int > 0 %}{{ (as_datetime(state_attr('timer.timer1', 'finishes_at')) - now()).total_seconds() | timestamp_custom('%H', false) | int }} uur {% endif %}{%
+              if (as_datetime(state_attr('timer.timer1', 'finishes_at')) - now()).total_seconds() | timestamp_custom('%M', false) | int == 1 %} 1 minuut{%
+              elif (as_datetime(state_attr('timer.timer1', 'finishes_at')) - now()).total_seconds() | timestamp_custom('%M', false) | int > 1 %}{{ (as_datetime(state_attr('timer.timer1', 'finishes_at')) - now()).total_seconds() | timestamp_custom('%M', false) | int }} minuten {% endif %}{%
+              if (as_datetime(state_attr('timer.timer1', 'finishes_at')) - now()).total_seconds() | timestamp_custom('%S', false) | int == 1 %} 1 seconde{%
+              elif (as_datetime(state_attr('timer.timer1', 'finishes_at')) - now()).total_seconds() | timestamp_custom('%S', false) | int > 1 %}{{ (as_datetime(state_attr('timer.timer1', 'finishes_at')) - now()).total_seconds() | timestamp_custom('%S', false) | int }} seconden {% endif %}{% endif %}te gaan. {%
+            endif %}{%
+            if states.timer.timer2.state == 'active' and (entity_id == 'timer.timer2' or entity_id == 'null') %}{% 
+              set duration = "" %}{% 
+              if states.timer.timer2.attributes.duration[:2] | int(default=0) > 9 %}{%
+              set hr = states.timer.timer2.attributes.duration[:2] %}{% else %}{%
+              set hr = states.timer.timer2.attributes.duration[:1] %}{% endif %}{%
+              if states.timer.timer2.attributes.duration[3:][:2] | int(default=0) > 9 %}{%
+              set min = states.timer.timer2.attributes.duration[3:][:2] %}{% else %}{%
+              set min = states.timer.timer2.attributes.duration[3:][:1] %}{% endif %}{%
+              if states.timer.timer2.attributes.duration[5:] | int(default=0) > 9 %}{%
+              set sec = states.timer.timer2.attributes.duration[5:] %}{% else %}{%
+              set sec = states.timer.timer2.attributes.duration[6:] %}{% endif %}{%
+              
+              if hr | int(default=0) > 0 %}{% set duration = duration + hr + " uur " %}{% endif %}{%
+              if min | int(default=0) == 1 %}{% set duration = duration + min + " minuut " %}{%
+              elif min | int(default=0) > 1 %}{% set duration = duration + min + " minuten " %}{% endif %}{%
+              if sec | int(default=0) == 1 %}{% set duration = duration + sec + " seconde " %}{%
+              elif sec | int(default=0) > 1 %}{% set duration = duration + sec + " seconden " %}{% endif %}De tweede timer van {{ duration }}is actief met nog {%
+              if (states['timer.timer2'].attributes.duration != "none") or (states['timer.timer2'].state == "active") -%}{%
+              if (as_datetime(state_attr('timer.timer2', 'finishes_at')) - now()).total_seconds() | timestamp_custom('%H', false) | int > 0 %}{{ (as_datetime(state_attr('timer.timer2', 'finishes_at')) - now()).total_seconds() | timestamp_custom('%H', false) | int }} uur {% endif %}{%
+              if (as_datetime(state_attr('timer.timer2', 'finishes_at')) - now()).total_seconds() | timestamp_custom('%M', false) | int == 1 %} 1 minuut{%
+              elif (as_datetime(state_attr('timer.timer2', 'finishes_at')) - now()).total_seconds() | timestamp_custom('%M', false) | int > 1 %}{{ (as_datetime(state_attr('timer.timer2', 'finishes_at')) - now()).total_seconds() | timestamp_custom('%M', false) | int }} minuten {% endif %}{%
+              if (as_datetime(state_attr('timer.timer2', 'finishes_at')) - now()).total_seconds() | timestamp_custom('%S', false) | int == 1 %} 1 seconde{%
+              elif (as_datetime(state_attr('timer.timer2', 'finishes_at')) - now()).total_seconds() | timestamp_custom('%S', false) | int > 1 %}{{ (as_datetime(state_attr('timer.timer2', 'finishes_at')) - now()).total_seconds() | timestamp_custom('%S', false) | int }} seconden {% endif %}{% endif %}te gaan. {%
+            endif %}{%
+            
+            if states.timer.timer3.state == 'active' and (entity_id == 'timer.timer3' or entity_id == 'null') %}{% 
+              set duration = "" %}{% 
+              if states.timer.timer3.attributes.duration[:2] | int(default=0) > 9 %}{%
+              set hr = states.timer.timer3.attributes.duration[:2] %}{% else %}{%
+              set hr = states.timer.timer3.attributes.duration[:1] %}{% endif %}{%
+              if states.timer.timer3.attributes.duration[3:][:2] | int(default=0) > 9 %}{%
+              set min = states.timer.timer3.attributes.duration[3:][:2] %}{% else %}{%
+              set min = states.timer.timer3.attributes.duration[3:][:1] %}{% endif %}{%
+              if states.timer.timer3.attributes.duration[5:] | int(default=0) > 9 %}{%
+              set sec = states.timer.timer3.attributes.duration[5:] %}{% else %}{%
+              set sec = states.timer.timer3.attributes.duration[6:] %}{% endif %}{%
+              
+              if hr | int(default=0) > 0 %}{% set duration = duration + hr + " uur " %}{% endif %}{%
+              if min | int(default=0) == 1 %}{% set duration = duration + min + " minuut " %}{%
+              elif min | int(default=0) > 1 %}{% set duration = duration + min + " minuten " %}{% endif %}{%
+              if sec | int(default=0) == 1 %}{% set duration = duration + sec + " seconde " %}{%
+              elif sec | int(default=0) > 1 %}{% set duration = duration + sec + " seconden " %}{% endif %}De derde timer van {{ duration }}is actief met nog {%
+              if (states['timer.timer3'].attributes.duration != "none") or (states['timer.timer3'].state == "active") -%}{%
+              if (as_datetime(state_attr('timer.timer3', 'finishes_at')) - now()).total_seconds() | timestamp_custom('%H', false) | int > 0 %}{{ (as_datetime(state_attr('timer.timer3', 'finishes_at')) - now()).total_seconds() | timestamp_custom('%H', false) | int }} uur {% endif %}{%
+              if (as_datetime(state_attr('timer.timer3', 'finishes_at')) - now()).total_seconds() | timestamp_custom('%M', false) | int == 1 %} 1 minuut{%
+              elif (as_datetime(state_attr('timer.timer3', 'finishes_at')) - now()).total_seconds() | timestamp_custom('%M', false) | int > 1 %}{{ (as_datetime(state_attr('timer.timer3', 'finishes_at')) - now()).total_seconds() | timestamp_custom('%M', false) | int }} minuten {% endif %}{%
+              if (as_datetime(state_attr('timer.timer3', 'finishes_at')) - now()).total_seconds() | timestamp_custom('%S', false) | int == 1 %} 1 seconde{%
+              elif (as_datetime(state_attr('timer.timer3', 'finishes_at')) - now()).total_seconds() | timestamp_custom('%S', false) | int > 1 %}{{ (as_datetime(state_attr('timer.timer3', 'finishes_at')) - now()).total_seconds() | timestamp_custom('%S', false) | int }} seconden {% endif %}{% endif %}te gaan. {%
+            endif %}{% endif %}
