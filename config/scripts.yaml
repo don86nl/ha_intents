@@ -6,7 +6,11 @@ timer_start:
     data_template:
       duration: "{{ duration }}"
     target:
-      entity_id: "{{ entity_id }}"
+      entity_id: "{{ 'timer.' + entity_id }}"
+  - service: input_boolean.turn_on
+    data: {}
+    target:
+      entity_id: "{{ 'input_boolean.' + entity_id }}"
 timer_stop:
   alias: Timer Stop
   mode: single
@@ -14,13 +18,13 @@ timer_stop:
   - choose:
     - conditions:
       - condition: template
-        value_template: "{{ states(entity_id) == 'active' }}"
+        value_template: "{{ states('timer.' + entity_id) == 'active' }}"
         alias: Specific timer is active
       sequence:
-      - service: timer.cancel
+      - service: input_boolean.turn_off
+        data: {}
         target:
-          entity_id: "{{ entity_id }}"
-        alias: Cancel specific timer
+          entity_id: input_boolean.{{ entity_id }}
     - conditions:
       - condition: or
         conditions:
@@ -28,16 +32,16 @@ timer_stop:
           value_template: "{{ (states.timer|selectattr('state','eq','active')|list|length == 1 and entity_id == 'null') }}"
           alias: Null and only 1 active
         - condition: template
-          value_template: "{{ (entity_id == ''timer.timer1, timer.timer2, timer.timer3'') }}"
+          value_template: "{{ (entity_id == 'all') }}"
           alias: Stop all timers
         alias: Only 1 timer or all timers
       sequence:
-      - service: timer.cancel
+      - service: input_boolean.turn_off
+        data: {}
         target:
           entity_id:
-          - timer.timer1
-          - timer.timer2
-          - timer.timer3
-        alias: Cancel all timers
+          - input_boolean.timer1
+          - input_boolean.timer2
+          - input_boolean.timer3
     default:
-    - stop: ""
+    - stop: ''
