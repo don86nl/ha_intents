@@ -12,10 +12,10 @@ lists:
   entity_id:
     values:
       - in: "eerste"
-        out: "timer.timer1"
+        out: "timer1"
       - in: "tweede"
-        out: "timer.timer2"
+        out: "timer2"
       - in: "derde"
-        out: "timer.timer3"
-      - in: "alle"
-        out: "timer.timer1, timer.timer2, timer.timer3"
+        out: "timer3"
+      - in: "(alle|iedere)"
+        out: "all"
