@@ -72,3 +72,8 @@ lists:
     range:
       from: 0
       to: 24
+responses:
+  intents:
+    TimerStart:
+      default: >
+        {{ (["Geen probleem. ", "Goed. ", "Natuurlijk. ", ""] | random) + (["Ik start de timer voor ", "Timer gestart voor ", "Ik zet een timer voor ", "Timer geactiveerd voor "] | random)}}{% if (slots.hours | int(default=0)) == 1 %}{{ (slots.hours | int)}} uur{% elif (slots.hours | int(default=0)) > 1 %}{{ (slots.hours | int)}} uren{% endif %}{% if (slots.hours | int(default=0)) > 0 and ((slots.minutes | int(default=0)) > 0 or (slots.seconds | int(default=0)) > 0) %} en {% endif %}{% if (slots.minutes | int(default=0)) == 1 %}{{ (slots.minutes | int)}} minuut{% elif (slots.minutes | int(default=0)) > 1 %}{{ (slots.minutes | int)}} minuten{% endif %}{% if (slots.minutes | int(default=0)) > 0 and (slots.seconds | int(default=0)) > 0 %} en {% endif %}{% if (slots.seconds | int(default=0)) == 1 %}{{ (slots.seconds | int)}} seconde{% elif (slots.seconds | int(default=0)) > 1 %}{{ (slots.seconds | int)}} seconden{% endif %}.
