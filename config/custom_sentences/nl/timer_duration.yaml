@@ -28,10 +28,12 @@ responses:
       default: >
         {% set timer_amount = states.timer|selectattr('state','eq','active')|list|length %}
         {% if timer_amount == 0 %}
-        Er zijn momenteel geen timers actief.
+        Er zijn momenteel geen timers actief. 
         {% else %}
           {% set active_timers = states.timer|selectattr('state', 'eq', 'active')|list %}{%
-             if active_timers|length == 0 %}Er zijn momenteel geen timers actief.{% else %}{%
+             if active_timers|length == 0 %}Er zijn momenteel geen timers actief. {%
+             elif active_timers|length > 1 %}Er zijn momenteel {{active_timers|length }} timers actief. {%
+             endif %}{%
              for timer in active_timers %}{%
              set timer_id = timer.entity_id %}{%
              set timer_finishes_at = state_attr(timer_id, 'finishes_at') %}{%
@@ -41,12 +43,16 @@ responses:
              set minutes_remaining = (time_remaining.total_seconds() % 3600) // 60 %}{%
              set seconds_remaining = time_remaining.total_seconds() % 60 %}{%
              
-             if timer.state == "active" or timer.state == "paused" %}Timer {{ timer_id[11:] }} {%
-             if timer.state == "paused" %} is gepauzeerd en {% endif %}heeft nog {%
-             if hours_remaining > 0 %}{{ hours_remaining | round }} uur {% endif %}{%
-             if minutes_remaining == 1 %}1 minuut {% endif %}{%
-             if minutes_remaining > 1 %}{{ minutes_remaining | round }} minuten {% endif %}{%
-             if seconds_remaining == 1 %}1 seconde {% endif %}{%
-             if seconds_remaining > 1 %}{{ seconds_remaining | round }} seconden {% endif %}te gaan. {%
-             endif %}{% endfor %}
+             if timer.state == "active" or timer.state == "paused" %}{%
+               if slots.entity_id != timer_id 
+                 %}Timer {{ timer_id[11:] }} {%
+                 if timer.state == "paused" %} is gepauzeerd en {% endif %}heeft nog {%
+               else %}Nog {% endif %}{%
+               if hours_remaining > 0 %}{{ hours_remaining | round }} uur {% endif %}{%
+               if minutes_remaining == 1 %}1 minuut {% endif %}{%
+               if minutes_remaining > 1 %}{{ minutes_remaining | round }} minuten {% endif %}{%
+               if seconds_remaining == 1 and hours_remaining == 0%}1 seconde {% endif %}{%
+               if seconds_remaining > 1 and hours_remaining == 0 %}{{ seconds_remaining | round }} seconden {% endif %}te gaan. {%
+             endif %}{%
+             endfor %}
         {% endif %}
