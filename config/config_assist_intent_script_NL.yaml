@@ -30,14 +30,11 @@
             - condition: template
               value_template: "{{ (states.timer|selectattr('state','eq','active')|list|length == 1 and entity_id == 'null') }}"
             - condition: template
-              value_template: "{{ entity_id == 'all' }}"
+              value_template: "{{ entity_id == 'all' and states.timer|selectattr('state','eq','active')|list|length > 0 }}"
           sequence:
           - service: timer.cancel
             target:
-              entity_id:
-              - timer.timer1
-              - timer.timer2
-              - timer.timer3
+              entity_id: "{{ states.timer | selectattr('state','eq','active') | map(attribute='entity_id') | join(', ') }}"
               
   TimerDuration:
     async_action: true
