@@ -18,3 +18,6 @@ Restart your Home Assistant instance.
 # Why delays?
 Sometimes Assist is slower in its answer than the service performing the action. 
 For example, we ask Assist to stop a timer. The service will stop the timer, then Assist will tell there are no timers active (instead of 'Okay, stopping the timer).
+
+# Known bugs
+1. When stopping a timer, Assist currently responds with 'that timer is not running'. The timer(s) is/are stopped nonetheless.
