@@ -1,0 +1,62 @@
+language: "en"
+intents:
+  TimerDuration:
+    data:
+      - sentences:
+          - "how much time is left on [the] [number] {entity_id} timer"
+          - "how much time is left on timer [number] {entity_id}"
+          - "how long until {entity_id} timer finishes"
+          - "how much longer on [the] [number] {entity_id} timer"
+      - sentences:
+          - "how much time is left on [the] timer"
+          - "how long until the timer finishes"
+          - "how much longer on the timer"
+        slots:
+          entity_id: "null"
+lists:
+  entity_id:
+    values:
+      - in: "first"
+        out: "timer.timer1"
+      - in: "second"
+        out: "timer.timer2"
+      - in: "third"
+        out: "timer.timer3"
+      - in: "(all|every)"
+        out: "timer.timer1, timer.timer2, timer.timer3"
+        
+responses:
+  intents:
+    TimerDuration:
+      default: >
+        {% set timer_amount = states.timer|selectattr('state','eq','active')|list|length %}
+        {% if timer_amount == 0 %}
+        There are currently no timers active.
+        {% else %}
+          {% set active_timers = states.timer|selectattr('state', 'eq', 'active')|list %}{%
+             if active_timers|length == 0 %}There are currently no timers active. {%
+             elif active_timers|length > 1 %}Currently there are {{active_timers|length }} timers active. {%
+             endif %}{%
+             for timer in active_timers %}{%
+             set timer_id = timer.entity_id %}{%
+             set timer_finishes_at = state_attr(timer_id, 'finishes_at') %}{%
+  
+             set time_remaining = as_datetime(timer_finishes_at) - now() %}{%
+             set hours_remaining = time_remaining.total_seconds() // 3600 %}{%
+             set minutes_remaining = (time_remaining.total_seconds() % 3600) // 60 %}{%
+             set seconds_remaining = time_remaining.total_seconds() % 60 %}{%
+             
+             if timer.state == "active" or timer.state == "paused" %}{%
+               if slots.entity_id != timer_id 
+                 %}Timer {{ timer_id[11:] }} {%
+                 if timer.state == "paused" %} is paused and {% endif %}has {%
+               else %}Nog {% endif %}{%
+               if hours_remaining == 1 %}1 hour {% endif %}{%
+               if hours_remaining > 1 %}{{ hours_remaining | round }} hours {% endif %}{%
+               if minutes_remaining == 1 %}1 minute {% endif %}{%
+               if minutes_remaining > 1 %}{{ minutes_remaining | round }} minutes {% endif %}{%
+               if seconds_remaining == 1 and hours_remaining == 0%}1 seconde {% endif %}{%
+               if seconds_remaining > 1 and hours_remaining == 0 %}{{ seconds_remaining | round }} seconds {% endif %}left. {%
+             endif %}{%
+             endfor %}
+        {% endif %}
