@@ -4,6 +4,7 @@ intents:
     data:
       - sentences:
           - "(stop|annuleer|<zou>) [de] {entity_id} timer[s] [[willen|kunnen] <doe>] [stoppen|annuleren|uitzetten]"
+          - "(stop|annuleer|<zou>) timer {entity_id} [[willen|kunnen] <doe>] [stoppen|annuleren|uitzetten]"
       - sentences:
           - "(stop|annuleer|<zou>) [de] timer [[willen|kunnen] <doe>] [stoppen|annuleren|uitzetten]"
         slots:
