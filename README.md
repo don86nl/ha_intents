@@ -5,14 +5,14 @@ For now, it adds the ability to start and stop timers and ask how much time is l
 # Usage
 #Installation
 1. TIMERS
-Create 3 timers; timer.timer1, timer.timer2, timer.timer3.
+* Create 3 timers; timer.timer1, timer.timer2, timer.timer3.
 
 2. FILES
-Add the folder 'custom_sentences' to your installation.
-Add the file config_assist_intent_script.yaml to your installation or add the content of the file to yours if you already have such a file.
+* Add the folder 'custom_sentences' to your installation.
+* Add the file config_assist_intent_script.yaml to your installation or add the content of the file to yours if you already have such a file.
 
 3. RESTART
-Restart your Home Assistant instance.
+* Restart your Home Assistant instance.
 
 # FAQ
 1. Why delays?
