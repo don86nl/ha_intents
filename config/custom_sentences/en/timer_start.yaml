@@ -4,47 +4,47 @@ intents:
     data:
 #All times
       - sentences:
-          - "[(would|could) you] (start|set) [a] timer for {hours} (hour|hours) [and] {minutes} (minute|minutes) [and] {seconds} (second|seconds)"
+          - "[(would|could) you] (start|set) [a] timer for ({advertised_timer_values:hours}|{hours}) (hour|hours) [and] ({advertised_timer_values:minutes}|{minutes}) (minute|minutes) [and] ({advertised_timer_values:seconds}|{seconds}) (second|seconds)"
 #Only hour(s)
       - sentences:
-          - "[(would|could) you] (start|set) [a] timer for {hours} (hour|hours)"
+          - "[(would|could) you] (start|set) [a] timer for ({advertised_timer_values:hours}|{hours}) (hour|hours)"
         slots:
           seconds: 0
           minutes: 0
 #Only minute(s)
       - sentences:
-          - "[(would|could) you] (start|set) [a] timer for {minutes} (minute|minutes)"
+          - "[(would|could) you] (start|set) [a] timer for ({advertised_timer_values:minutes}|{minutes}) (minute|minutes)"
         slots:
           seconds: 0
           hours: 0
 #Only seconds
       - sentences:
-          - "[(would|could) you] (start|set) [a] timer for {seconds} (second|seconds)"
+          - "[(would|could) you] (start|set) [a] timer for ({advertised_timer_values:seconds}|{seconds}) (second|seconds)"
         slots:
           minutes: 0
           hours: 0
 #No hour, only minutes and seconds
       - sentences:
-          - "[(would|could) you] (start|set) [a] timer for {minutes} (minute|minutes) [and] {seconds} (second|seconds)"
+          - "[(would|could) you] (start|set) [a] timer for ({advertised_timer_values:minutes}|{minutes}) (minute|minutes) [and] ({advertised_timer_values:seconds}|{seconds}) (second|seconds)"
         slots:
           hours: 0          
 #No seconds, only hours and minutes
       - sentences:
-          - "[(would|could) you] (start|set) [a] timer for {hours} (hour|hours) [and] {minutes} (minute|minutes)"
+          - "[(would|could) you] (start|set) [a] timer for ({advertised_timer_values:hours}|{hours}) (hour|hours) [and] ({advertised_timer_values:minutes}|{minutes}) (minute|minutes)"
         slots:
           seconds: 0
 #Halves
 #Minutes
       - sentences:
-          - "[(would|could) you] (start|set) [a] timer for {minutes}[ ]and a half (minute|minutes)"
-          - "[(would|could) you] (start|set) [a] timer for {minutes}[ ]and (0,5|0.5) (minute|minutes)"
+          - "[(would|could) you] (start|set) [a] timer for ({advertised_timer_values:minutes}|{minutes})[ ]and a half (minute|minutes)"
+          - "[(would|could) you] (start|set) [a] timer for ({advertised_timer_values:minutes}|{minutes})[ ]and (0,5|0.5) (minute|minutes)"
         slots:
           hours: 0
           seconds: 30
 #Hours
       - sentences:
-          - "[(would|could) you] (start|set) [a] timer for {hours}[ ][hour ]and (a half|half a) [minute]"
-          - "[(would|could) you] (start|set) [a] timer for {hours}[ ][hour ]and (0,5|0.5) [minute]"
+          - "[(would|could) you] (start|set) [a] timer for ({advertised_timer_values:hours}|{hours})[ ][hour ]and (a half|half a) [minute]"
+          - "[(would|could) you] (start|set) [a] timer for ({advertised_timer_values:hours}|{hours})[ ][hour ]and (0,5|0.5) [minute]"
         slots:
           minutes: 30
           seconds: 0
@@ -61,6 +61,26 @@ lists:
     range:
       from: 0
       to: 24
+  advertised_timer_values:
+    values:
+      - in: one
+        out: 1
+      - in: two
+        out: 2
+      - in: three
+        out: 3
+      - in: four
+        out: 4
+      - in: five
+        out: 5
+      - in: six
+        out: 6
+      - in: seven
+        out: 7
+      - in: eight
+        out: 8
+      - in: nine
+        out: 9
 responses:
   intents:
     TimerStart:
