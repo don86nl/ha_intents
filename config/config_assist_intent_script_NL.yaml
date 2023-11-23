@@ -1,6 +1,6 @@
   TimerStart:
     action:
-      service: timer.start
+    - service: timer.start
       data_template:
         duration: "{{hours | int(default=0)}}:{{ minutes | int(default=0) }}:{{ seconds | int(default=0) }}"
       target:      
@@ -8,7 +8,20 @@
           {% if states('timer.timer1') != 'active' and states('timer.timer1') != 'paused' %} timer.timer1
           {% elif states('timer.timer2') != 'active' and states('timer.timer2') != 'paused' %} timer.timer2
           {% else %} timer.timer3{% endif%}
-
+    ### If you want to save the area where assist was activate
+    ### Only with esphome devices, no phone or browser
+    - service: input_text.set_value
+      target:
+        entity_id: >
+          {% if states('timer.timer1') != 'active' and states('timer.timer1') != 'paused' %} input_text.timer1_area
+          {% elif states('timer.timer2') != 'active' and states('timer.timer2') != 'paused' %} input_text.timer2_area
+          {% else %} input_text.timer3_area{% endif%}
+      data:
+        value: >
+          ### Change sensor_suffix to match your installaties.
+          {% set sensor_suffix = "bezig_met_verwerken" %}
+          {% set active_sensor = states.binary_sensor | selectattr('entity_id', 'match', '.*' + sensor_suffix + '$') | selectattr('state', 'eq', 'on') | first %}
+          {{ area_name(active_sensor.entity_id) if active_sensor else 'Onbekend' }}
   TimerStop:
     async_action: true
     action:
