@@ -1,9 +1,0 @@
-language: "nl"
-intents:
-  Goodnight:
-    data: 
-      - sentences:
-        - "Weltrusten"
-        - "Goedenacht"
-        - "Tot morgen"
-        - "Slaap lekker"
