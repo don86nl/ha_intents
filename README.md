@@ -1,22 +1,19 @@
 # Home Assistant Assist Extra Functionalities.
 
-# 1\. Goodnight routine
-
-This package adds a customizable routine to your Assist for when you go to bed!
-
-## Usage
-
-**Installation.**
+## \. Installation
 *If this is your first package for Home Assistant, then add the following line to your configuration.yaml:*
 `homeassistant:`
 `  packages: !include_dir_named packages`
 
-1.  Place the package folder (if you don't have one yet) in your Home Assistant /config folder.
-2.  Place the language of your picking in your *config/custom_sentences* folder.
-3.  Modify the package file to your preferences.
-4.  Restart Home Assistant.
+1.  Create a package folder (if you don't have one yet) in your Home Assistant /config folder.
+2.  Place the package you wish to use *(for example 'packages/assist_goodnight.yaml' in this folder)*.
+3.  Place the corresponding language of your picking in your *config/custom_sentences* folder.
+4.  Optional: Modify the package file to your preferences.
+5.  Restart Home Assistant.
 
 # 2\. Timers
+
+THIS SCRIPT WILL BE UPDATED TO BE USED WITH PACKAGES! DO NOT USE AT THIS MOMENT!
 
 This script adds timer functionality to Home Assistant's Assist.
 For now, it adds the ability to start and stop timers and ask how much time is left on all or a specific timer.
