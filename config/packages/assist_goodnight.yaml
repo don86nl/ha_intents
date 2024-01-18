@@ -1,0 +1,97 @@
+## Assist Package - Goodnight
+## Routine before going to sleep
+
+homeassistant:
+  customize:
+    script.assist_goodnight:
+      language: "nl" #Set to "nl" for Dutch, "en" for English.
+      arm_alarm: false #Set this to true if you want the alarm to be armed during the routine.
+      turn_off_lights: true #Should all lights be turned off during the routine?
+      turn_off_media_players: true #Should all media_players be turned off during the routine?
+
+script:
+  assist_goodnight:
+    alias: "Assist - Goodnight"
+    description: "Script for a goodnight routine using HA Assist."
+    icon: mdi:assistant
+    mode: single
+    sequence:
+      - alias: Turn off lights if any are on and set to true
+        choose:
+          - conditions:
+              - alias: Lights are on
+                condition: template
+                value_template: >-
+                  {{ (states.light|selectattr('state','equalto','on')|list|length) >
+                  0 }}
+              - alias: Turn off lights is set to true
+                condition: template
+                value_template: "{{ turn_off_lights == True }}"
+            sequence:
+              - service: light.turn_off
+                alias: Turn off all lights
+                data_template:
+                  entity_id: >-
+                    {{ states.light | selectattr('state','eq','on') |
+                    map(attribute='entity_id') | join(', ') }}
+                enabled: true
+      - alias: Turn off media_players if any are on and set to true
+        choose:
+          - conditions:
+              - alias: Media players are on
+                condition: template
+                value_template: >-
+                  {{
+                  (states.media_player|selectattr('state','equalto','on')|list|length)
+                  > 0 }}
+              - alias: Turn off media_players is set to true
+                condition: template
+                value_template: "{{ turn_off_media_players == True }}"
+            sequence:
+              - service: media_player.turn_off
+                target:
+                  entity_id: >-
+                    {{ states.media_player | selectattr('state','eq','on') |
+                    map(attribute='entity_id') | join(', ') }}
+                alias: Turn off all media_players
+      - alias: Arm alarm if set to true
+        choose:
+          - conditions:
+              - condition: template
+                value_template: "{{ arm_alarm == True }}"
+            sequence:
+              - service: alarm_control_panel.alarm_arm_home
+                target:
+                  entity_id: >-
+                    {{ states.alarm_control_panel | map(attribute='entity_id') |
+                    join(', ') }}
+                alias: Turn on any alarm_panel
+            alias: Arm alarm if set to true
+      - service: input_text.set_value
+        target:
+          entity_id: input_text.assist_goodnight
+        data:
+          value: >-
+            {% if language == "nl" %}
+              {{ ["Ik wens u een fijne nacht, ", "Een fijne nacht gewenst ","Welterusten ", "Goedenacht "] | random }}    
+            {% else %}
+              {{ ["I wish you a pleasant night, ", "Have a pleasent night ","Goodnight ", "Sweet dreams "] | random }}    
+            {% endif %}{% if
+            (states.person|selectattr('state','equalto','home')|list|length) == 1
+            %}{{ states.person | selectattr('state','eq','home') |
+            map(attribute='name') | join(', ') }}{%endif%}.
+        alias: Input message
+          
+input_text:
+  assist_goodnight:
+    name: "Assist - Goodnight routine"
+    icon: mdi:assistant
+    max: 255
+   
+intent_script: 
+  Goodnight:
+    async_action: false
+    action:
+      - service: script.assist_goodnight
+    speech:
+      text: "{{ states('input_text.assist_goodnight') }}"
