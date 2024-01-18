@@ -1,0 +1,9 @@
+language: "en"
+intents:
+  Goodnight:
+    data: 
+      - sentences:
+        - "(Goodnight|Good night)"
+        - "Sleep (well|tight)"
+        - "See you tommorow"
+        - "Sweet dreams"
