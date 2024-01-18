@@ -17,8 +17,8 @@ If this is your first package for Home Assistant, then add the following line to
 **1\. Good night routine**
 This package adds a (customizable) good night routine to your Assist functions.
 
-**2\. Timers
-**THIS SCRIPT WILL BE UPDATED TO BE USED WITH PACKAGES! DO NOT USE AT THIS MOMENT!
+**2\. Timers**
+THIS SCRIPT WILL BE UPDATED TO BE USED WITH PACKAGES! DO NOT USE AT THIS MOMENT!
 
 This script adds timer functionality to Home Assistant's Assist.
 For now, it adds the ability to start and stop timers and ask how much time is left on all or a specific timer.
