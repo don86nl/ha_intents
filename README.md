@@ -4,6 +4,7 @@
 
 If this is your first package for Home Assistant, then add the following line to your configuration.yaml:
 `homeassistant:`
+
 `  packages: !include_dir_named packages`
 
 1.  Create a package folder (if you don't have one yet) in your Home Assistant /config folder.
