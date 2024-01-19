@@ -3,6 +3,7 @@
 ## Installation
 
 If this is your first package for Home Assistant, then add the following line to your configuration.yaml:
+
 `homeassistant:`
 
 `  packages: !include_dir_named packages`
