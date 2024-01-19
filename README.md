@@ -19,6 +19,7 @@ If this is your first package for Home Assistant, then add the following line to
 
 **1\. Good night routine**
 This package adds a (customizable) good night routine to your Assist functions.
+*Disclaimer: The Google TV in the video was shutdown using the Google Assistant SDK, not the media_player.turn_off service call, which unfortunately doesn't work for this type of device.*
 
 **2\. Timers**
 THIS SCRIPT WILL BE UPDATED TO BE USED WITH PACKAGES! DO NOT USE AT THIS MOMENT!
