@@ -9,12 +9,26 @@ homeassistant:
       ########################################################
       ### SET THE VARIABLES HERE TO CUSTOMIZE YOUR ROUTINE ###
       ########################################################
-        language: "nl"                  #Set to "nl", "en", "de" or "fr".
+        language: "en"                  #Set to "nl", "en", "de" or "fr".
+        
+        # Alarm control panel
         arm_alarm: false                #Set this to true if you want the alarm to be armed during the routine.
+        
+        # Lights
         turn_off_lights: true           #Should all lights be turned off during the routine?
-        turn_off_media_players: false   #Should all media_players be turned off during the routine?
+        
+        # Media players
+        turn_off_media_players: true    #Should media_players be turned off or stopped during the routine?
+        media_players_list_turn_off:    #Which media_players should be turned off?
+          - media_player.slaapkamer_tv
+        stop_media_players:             #Should any media_players be stopped? (which cannot be turned off)
+          - media_player.slaapkamer_assistent
+          - media_player.keuken_assistent
+        
+        # Speech
         say_open_windows: true          #Should Assist report open windows in the routine?
         say_open_doors: true            #Should Assist report open doors in the routine?
+        
       ########################################################
         
 script:
@@ -32,6 +46,8 @@ script:
           arm_alarm:  "{{ settings.get('arm_alarm') }}"
           turn_off_lights: "{{ settings.get('turn_off_lights') }}"
           turn_off_media_players:  "{{ settings.get('turn_off_media_players') }}"
+          media_players_list_turn_off:  "{{ settings.get('media_players_list_turn_off') }}"
+          stop_media_players:  "{{ settings.get('stop_media_players') }}"
           say_open_windows: "{{ settings.get('say_open_windows') }}"
           say_open_doors: "{{ settings.get('say_open_doors') }}"
       - alias: Turn off lights if any are on and set to true
@@ -56,22 +72,18 @@ script:
       - alias: Turn off media_players if any are on and set to true
         choose:
           - conditions:
-              - alias: Media players are on
-                condition: template
-                value_template: >-
-                  {{
-                  (states.media_player|selectattr('state','equalto','on')|list|length)
-                  > 0 }}
               - alias: Turn off media_players is set to true
                 condition: template
                 value_template: "{{ turn_off_media_players == True }}"
             sequence:
               - service: media_player.turn_off
                 target:
-                  entity_id: >-
-                    {{ states.media_player | selectattr('state','eq','on') |
-                    map(attribute='entity_id') | join(', ') }}
-                alias: Turn off all media_players
+                  entity_id: "{{ media_players_list_turn_off }}"
+                alias: Turn off media_players
+              - service: media_player.media_stop
+                target:
+                  entity_id: "{{ media_player.media_stop }}"
+                alias: Stop media_players
       - alias: Arm alarm if set to true
         choose:
           - conditions:
