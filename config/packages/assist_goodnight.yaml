@@ -125,8 +125,11 @@ script:
                | selectattr('state', 'eq', 'on')
                | map(attribute='name') | join(', ') -%}
             {%- endif -%}
-               
+            
             {%- if language == "nl" %}
+              {%- if windows_opened | int(default=0) > 0 or doors_opened | int(default=0) > 0 -%} 
+              Nog even voordat u gaat slapen.
+              {%- endif -%}
               {%- if windows_opened | int(default=0) > 0 -%}
               Er staan {{ windows_opened }} ramen open, namelijk {{ windows_opened_list + '. '}}
               {%- endif -%}
@@ -135,6 +138,9 @@ script:
               {%- endif -%}
               {{- ["Ik wens u een fijne nacht ", "Een fijne nacht gewenst ","Welterusten ", "Goedenacht "] | random }}    
             {%- elif language == "en" -%}
+              {%- if windows_opened | int(default=0) > 0 or doors_opened | int(default=0) > 0 -%} 
+              Just one thing before you go to sleep.
+              {%- endif -%}
               {%- if windows_opened | int(default=0) > 0 -%}
               There are {{ windows_opened }} windows open, {{ windows_opened_list + '. ' }}
               {%- endif -%}
@@ -143,6 +149,9 @@ script:
               {%- endif -%}
               {{- ["I wish you a pleasent night ", "Good night ","Sleep well ", "Good evening  "] | random -}}
             {%- elif language == "de" -%}
+              {%- if windows_opened | int(default=0) > 0 or doors_opened | int(default=0) > 0 -%} 
+              Noch ein Moment, bevor Sie schlafen gehen.
+              {%- endif -%}
               {% if windows_opened | int(default=0) > 0 -%}
               Es gibt {{ windows_opened }} geöffnete Fenster, {{ windows_opened_list + '. ' }}
               {%- endif -%}
@@ -151,6 +160,9 @@ script:
               {%- endif -%}
               {{- ["Gute Nacht ", "Schlaf gut ","Träumen Sie süß ", "Guten Abend "] | random -}}  
             {%- elif language == "fr" -%}
+              {%- if windows_opened | int(default=0) > 0 or doors_opened | int(default=0) > 0 -%} 
+              Encore un moment avant de vous coucher.
+              {%- endif -%}
               {% if windows_opened | int(default=0) > 0 -%}
                 Il y a {{ windows_opened }} fenêtres ouvertes, à savoir {{ windows_opened_list + '. ' }}
               {%- endif -%}
