@@ -1,0 +1,9 @@
+language: "fr"
+intents:
+  Goodnight:
+    data: 
+      - sentences:
+        - "(Bonne nuit|Bonne nuit)"
+        - "Dors bien"
+        - "(À|A) demain"
+        - "Fais de beaux (rêves|reves)"
