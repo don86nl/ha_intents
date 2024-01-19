@@ -1,0 +1,9 @@
+language: "de"
+intents:
+  Goodnight:
+    data: 
+      - sentences:
+        - "(Gute Nacht|Gute Nacht)"
+        - "Schlaf (gut|fest)"
+        - "Bis morgen"
+        - "(Träum|Traum) (süß|sub)"
