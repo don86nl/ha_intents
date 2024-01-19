@@ -1,5 +1,7 @@
 ## Assist Package - Goodnight
 ## Routine before going to sleep
+## https://github.com/don86nl/ha_intents
+
 homeassistant:
   customize:
     script.assist_goodnight:
