@@ -1,21 +1,40 @@
 ## Assist Package - Goodnight
 ## Routine before going to sleep
-
 homeassistant:
   customize:
     script.assist_goodnight:
-      language: "nl" #Set to "nl" for Dutch, "en" for English.
-      arm_alarm: false #Set this to true if you want the alarm to be armed during the routine.
-      turn_off_lights: true #Should all lights be turned off during the routine?
-      turn_off_media_players: true #Should all media_players be turned off during the routine?
-
+      settings: &settings
+      ########################################################
+      ### SET THE VARIABLES HERE TO CUSTOMIZE YOUR ROUTINE ###
+      ########################################################
+        language: "nl"                  #Set to "nl", "en", "de" or "fr".
+        arm_alarm: false                #Set this to true if you want the alarm to be armed during the routine.
+        turn_off_lights: true           #Should all lights be turned off during the routine?
+        turn_off_media_players: false   #Should all media_players be turned off during the routine?
+        say_open_windows: true          #Should Assist report open windows in the routine?
+        say_open_doors: true            #Should Assist report open doors in the routine?
+      ########################################################
+        
 script:
   assist_goodnight:
     alias: "Assist - Goodnight"
     description: "Script for a goodnight routine using HA Assist."
     icon: mdi:assistant
     mode: single
+    variables:
+      settings: *settings
     sequence:
+#      - alias: "Get global variables"
+#        variables: 
+#          settings: "{{ settings }}"
+      - alias: "Set variables"
+        variables: &generic_vars
+          language:  "{{ settings.get('language') }}"
+          arm_alarm:  "{{ settings.get('arm_alarm') }}"
+          turn_off_lights: "{{ settings.get('turn_off_lights') }}"
+          turn_off_media_players:  "{{ settings.get('turn_off_media_players') }}"
+          say_open_windows: "{{ settings.get('say_open_windows') }}"
+          say_open_doors: "{{ settings.get('say_open_doors') }}"
       - alias: Turn off lights if any are on and set to true
         choose:
           - conditions:
@@ -72,14 +91,67 @@ script:
           entity_id: input_text.assist_goodnight
         data:
           value: >-
-            {% if language == "nl" %}
-              {{ ["Ik wens u een fijne nacht, ", "Een fijne nacht gewenst ","Welterusten ", "Goedenacht "] | random }}    
-            {% else %}
-              {{ ["I wish you a pleasant night, ", "Have a pleasent night ","Goodnight ", "Sweet dreams "] | random }}    
-            {% endif %}{% if
-            (states.person|selectattr('state','equalto','home')|list|length) == 1
-            %}{{ states.person | selectattr('state','eq','home') |
-            map(attribute='name') | join(', ') }}{%endif%}.
+            {%- if say_open_windows == true -%}
+              {%- set windows_opened = states.binary_sensor
+               | selectattr('attributes.device_class', 'defined')
+               | selectattr('attributes.device_class', 'eq', 'window')
+               | selectattr('state', 'eq', 'on')
+               | list | length -%}
+              {%- set windows_opened_list = states.binary_sensor
+               | selectattr('attributes.device_class', 'defined')
+               | selectattr('attributes.device_class', 'eq', 'window')
+               | selectattr('state', 'eq', 'on')
+               | map(attribute='name') | join(', ') -%}
+            {%- endif -%}
+            {%- if say_open_doors == true -%}
+              {%- set doors_opened = states.binary_sensor
+               | selectattr('attributes.device_class', 'defined')
+               | selectattr('attributes.device_class', 'eq', 'door')
+               | selectattr('state', 'eq', 'on')
+               | list | length -%}
+              {%- set doors_opened_list = states.binary_sensor
+               | selectattr('attributes.device_class', 'defined')
+               | selectattr('attributes.device_class', 'eq', 'door')
+               | selectattr('state', 'eq', 'on')
+               | map(attribute='name') | join(', ') -%}
+            {%- endif -%}
+               
+            {%- if language == "nl" -%}
+              {%- if windows_opened | int(default=0) > 0 -%}
+              Er staan {{ windows_opened }} ramen open, namelijk {{ windows_opened_list }}.
+              {%- endif -%}
+              {%- if doors_opened | int(default=0) > 0 -%}
+              Er staan {{ doors_opened }} deuren open, namelijk {{ doors_opened_list }}.
+              {%- endif -%}
+              {{- ["Ik wens u een fijne nacht ", "Een fijne nacht gewenst ","Welterusten ", "Goedenacht "] | random -}}    
+            {%- elif language == "en" -%}
+              {%- if windows_opened | int(default=0) > 0 -%}
+              There are {{ windows_opened }} windows open, {{ windows_opened_list }}.
+              {%- endif -%}
+              {% if doors_opened | int(default=0) > 0 %}
+             There are {{ doors_opened }} doors open, {{ doors_opened_list }}.
+              {%- endif -%}
+              {{- ["I wish you a pleasent night ", "Good night ","Sleep well ", "Good evening  "] | random -}}
+            {%- elif language == "de" -%}
+              {% if windows_opened | int(default=0) > 0 -%}
+              Es gibt {{ windows_opened }} geöffnete Fenster, {{ windows_opened_list }}.
+              {%- endif -%}
+              {%- if doors_opened | int(default=0) > 0 -%}
+              Es gibt {{ doors_opened }} geöffnete Türen, {{ doors_opened_list }}.
+              {%- endif -%}
+              {{- ["Gute Nacht ", "Schlaf gut ","Träumen Sie süß ", "Guten Abend "] | random -}}  
+            {%- elif language == "fr" -%}
+              {% if windows_opened | int(default=0) > 0 -%}
+                Il y a {{ windows_opened }} fenêtres ouvertes, à savoir {{ windows_opened_list }}.
+              {%- endif -%}
+              {%- if doors_opened | int(default=0) > 0 -%}
+                Il y a {{ doors_opened }} portes ouvertes, à savoir {{ doors_opened_list }}.
+              {%- endif -%}
+              {{- ["Bonne nuit ", "Bonne soirée ","Douce nuit ", "À bientôt "] | random -}}  
+            {%- endif %}
+            {%- if (states.person|selectattr('state','equalto','home')|list|length) == 1 -%}
+            {{- states.person | selectattr('state','eq','home') | map(attribute='name') | join(', ') -}}
+            {%- endif -%}.
         alias: Input message
           
 input_text:
