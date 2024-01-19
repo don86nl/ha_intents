@@ -24,9 +24,6 @@ script:
     variables:
       settings: *settings
     sequence:
-#      - alias: "Get global variables"
-#        variables: 
-#          settings: "{{ settings }}"
       - alias: "Set variables"
         variables: &generic_vars
           language:  "{{ settings.get('language') }}"
