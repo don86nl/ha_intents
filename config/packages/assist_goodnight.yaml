@@ -56,8 +56,7 @@ script:
               - alias: Lights are on
                 condition: template
                 value_template: >-
-                  {{ (states.light|selectattr('state','equalto','on')|list|length) >
-                  0 }}
+                  {{ (states.light|selectattr('state','equalto','on')|list|length) > 0 }}
               - alias: Turn off lights is set to true
                 condition: template
                 value_template: "{{ turn_off_lights == True }}"
@@ -82,7 +81,7 @@ script:
                 alias: Turn off media_players
               - service: media_player.media_stop
                 target:
-                  entity_id: "{{ media_player.media_stop }}"
+                  entity_id: "{{ media_players_list_turn_off }}"
                 alias: Stop media_players
       - alias: Arm alarm if set to true
         choose:
@@ -127,36 +126,36 @@ script:
                | map(attribute='name') | join(', ') -%}
             {%- endif -%}
                
-            {%- if language == "nl" -%}
+            {%- if language == "nl" %}
               {%- if windows_opened | int(default=0) > 0 -%}
-              Er staan {{ windows_opened }} ramen open, namelijk {{ windows_opened_list }}.
+              Er staan {{ windows_opened }} ramen open, namelijk {{ windows_opened_list + '. '}}
               {%- endif -%}
               {%- if doors_opened | int(default=0) > 0 -%}
-              Er staan {{ doors_opened }} deuren open, namelijk {{ doors_opened_list }}.
+              Er staan {{ doors_opened }} deuren open, namelijk {{ doors_opened_list + '. ' }}
               {%- endif -%}
-              {{- ["Ik wens u een fijne nacht ", "Een fijne nacht gewenst ","Welterusten ", "Goedenacht "] | random -}}    
+              {{- ["Ik wens u een fijne nacht ", "Een fijne nacht gewenst ","Welterusten ", "Goedenacht "] | random }}    
             {%- elif language == "en" -%}
               {%- if windows_opened | int(default=0) > 0 -%}
-              There are {{ windows_opened }} windows open, {{ windows_opened_list }}.
+              There are {{ windows_opened }} windows open, {{ windows_opened_list + '. ' }}
               {%- endif -%}
               {% if doors_opened | int(default=0) > 0 %}
-             There are {{ doors_opened }} doors open, {{ doors_opened_list }}.
+             There are {{ doors_opened }} doors open, {{ doors_opened_list + '. ' }}
               {%- endif -%}
               {{- ["I wish you a pleasent night ", "Good night ","Sleep well ", "Good evening  "] | random -}}
             {%- elif language == "de" -%}
               {% if windows_opened | int(default=0) > 0 -%}
-              Es gibt {{ windows_opened }} geöffnete Fenster, {{ windows_opened_list }}.
+              Es gibt {{ windows_opened }} geöffnete Fenster, {{ windows_opened_list + '. ' }}
               {%- endif -%}
               {%- if doors_opened | int(default=0) > 0 -%}
-              Es gibt {{ doors_opened }} geöffnete Türen, {{ doors_opened_list }}.
+              Es gibt {{ doors_opened }} geöffnete Türen, {{ doors_opened_list + '. ' }}
               {%- endif -%}
               {{- ["Gute Nacht ", "Schlaf gut ","Träumen Sie süß ", "Guten Abend "] | random -}}  
             {%- elif language == "fr" -%}
               {% if windows_opened | int(default=0) > 0 -%}
-                Il y a {{ windows_opened }} fenêtres ouvertes, à savoir {{ windows_opened_list }}.
+                Il y a {{ windows_opened }} fenêtres ouvertes, à savoir {{ windows_opened_list + '. ' }}
               {%- endif -%}
               {%- if doors_opened | int(default=0) > 0 -%}
-                Il y a {{ doors_opened }} portes ouvertes, à savoir {{ doors_opened_list }}.
+                Il y a {{ doors_opened }} portes ouvertes, à savoir {{ doors_opened_list + '. ' }}
               {%- endif -%}
               {{- ["Bonne nuit ", "Bonne soirée ","Douce nuit ", "À bientôt "] | random -}}  
             {%- endif %}
