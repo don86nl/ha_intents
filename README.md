@@ -19,12 +19,18 @@ If this is your first package for Home Assistant, then add the following line to
 
 **1\. Good night routine**
 This package adds a (customizable) good night routine to your Assist functions.
+When you say 'good night', assist will trigger several (chosen) actions, like turning off lights and telling open doors and/or windows.
 *Disclaimer: The Google TV in the video was shutdown using the Google Assistant SDK, not the media_player.turn_off service call, which unfortunately doesn't work for this type of device.*
 
 *You like the routine? Please consider voting for me in the Voice Assistant contest :) 
 https://community.home-assistant.io/t/voice-assistent-contest-assist-goodnight-routine-for-everyone*
 
-**2\. Timers**
+**2\. Set (bedside) alarm**
+This package adds a (customizable) bedside alarm to your Assist functions.
+You can ask it to set an alarm for a specific time. An automation is included which either plays a tts or media file on a chosen media_player when the spoken time is reached.
+*Be sure to set the variables. You must specify a media_player or the routine won't work.*
+
+**3\. Timers**
 THIS SCRIPT WILL BE UPDATED TO BE USED WITH PACKAGES! DO NOT USE AT THIS MOMENT!
 
 This script adds timer functionality to Home Assistant's Assist.
