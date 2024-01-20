@@ -1,0 +1,49 @@
+language: "nl"
+intents:
+  AlarmTimeStop:
+    data:
+      - sentences:
+          - "wil je de wekker uitzetten"
+          - "<zou> de wekker uit (willen|kunnen) zetten"
+          - "(zet|stop) de wekker [uit]"
+  AlarmTimeSet:
+    data:
+      - sentences:
+          - "wil je (de|een|mijn) wekker (voor|om) {alarm_hours}:{alarm_minutes}u zetten"
+          - "<zou> (de|een|mijn) wekker (voor|om) {alarm_hours}:{alarm_minutes}u willen zetten"
+          - "zet (de|een|mijn) wekker (voor|om) {alarm_hours}:{alarm_minutes}u"
+          - "(kun|kan|wil) je mij (wakker maken|wekken) om {alarm_hours}:{alarm_minutes}u"
+          - "<zou> mij wakker (kunnen|willen) maken om {alarm_hours}:{alarm_minutes}u"
+          - "<zou> mij (kunnen|willen) wekken om {alarm_hours}:{alarm_minutes}u"
+      - sentences:
+          - "wil je (de|een|mijn) wekker (voor|om) {alarm_hours} uur zetten"
+          - "<zou> (de|een|mijn) wekker (voor|om) {alarm_hours} uur willen zetten"
+          - "zet (de|een|mijn) wekker (voor|om) {alarm_hours} uur"
+          - "(kun|kan|wil) je mij (wakker maken|wekken) om {alarm_hours} uur"
+          - "<zou> mij wakker (kunnen|willen) maken om {alarm_hours} uur"
+          - "<zou> mij (kunnen|willen) wekken om {alarm_hours} uur"
+        slots:
+          alarm_minutes: 0
+          
+lists:  
+  alarm_minutes:
+    range:
+      from: 0
+      to: 59
+  alarm_hours:
+    range:
+      from: 0
+      to: 23
+      
+responses:
+  intents:
+    AlarmTimeStop:
+      default: >-
+        {{ (["Geen probleem. ", "Goed. ", "Natuurlijk. ", ""] | random) + (["Ik zet de wekker uit.", "Wekker uitgezet.", "Wekker uitgeschakeld."] | random)}}
+    AlarmTimeSet:
+      default: >-
+        {{ (["Geen probleem. ", "Goed. ", "Natuurlijk. ", ""] | random) + (["Ik zet de wekker voor ", "Wekker gezet voor "] | random) }}
+        {% if slots.alarm_minutes != 0 %}{{ slots.alarm_hours }}:{{ slots.alarm_minutes }}u.
+        {% else %}
+        {% if (slots.alarm_hours | int) < 10 %}0{% endif%}{{slots.alarm_hours}}:00u.
+        {% endif %}
