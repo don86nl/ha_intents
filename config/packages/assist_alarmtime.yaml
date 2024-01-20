@@ -1,0 +1,231 @@
+## Assist Package - Alarmtime
+## Routine before going to sleep
+## https://github.com/don86nl/ha_intents
+
+homeassistant:
+  customize:
+    script.assist_alarmtimeset:
+      settings: &settings
+      ########################################################
+      ### SET THE VARIABLES HERE TO CUSTOMIZE YOUR ROUTINE ###
+      ########################################################
+        alarm_target: "media_player.bedroom"  #Which device should play the alarm?
+        #You can also assign a sensor.entity_id to have a dynamic media_player entity.
+        
+        # Alarm type
+        alarm_tts: true                 #Set this to true if you want the alarm to be a tts message. Default is true.
+        tts_service: "tts.cloud_say"    #Which TTS service to use? Default is "tts.cloud_say".
+        tts_message: "Goodmorning sunshine. Time to get up!" #You can also assign a sensor.entity_id to have a dynamic tts message.
+        
+        #If alarm_tts is set to false, the media_location will automatically be used to play the target media file.
+        media_location: "/media/local/wakeup.mp3" 
+        
+        # Lights
+        lights_turn_on: false           #Should lights be turned on when the alarm rings? Default is false.
+        lights_delay: 5                 #Seconds before lights should be turned on. Default is 5.
+        lights:                         #Which light(s) should be turned on?
+          - light.bedroom
+                
+      ########################################################
+
+script:
+  assist_alarmtimeset:
+    alias: "Assist - AlarmTimeSet"
+    description: "Script for setting alarm using HA Assist."
+    icon: mdi:assistant
+    mode: single
+    variables:
+      settings: *settings
+    sequence:
+      - alias: "Set variables"
+        variables: &generic_vars
+          alarm_target:  "{{ settings.get('alarm_target') }}"
+          alarm_tts:  "{{ settings.get('alarm_tts') }}"
+          tts_message: "{{ settings.get('tts_message') }}"
+          media_location:  "{{ settings.get('media_location') }}"
+          lights_turn_on:  "{{ settings.get('lights_turn_on') }}"
+      - service: input_datetime.set_datetime
+        data_template:
+          date: >-
+            {% if (alarm_hours | int) < (now().strftime('%H') | int) %}
+            {{ (as_timestamp(now()) +1*86400) | timestamp_custom('%Y-%m-%d ') }}
+            {% else %}
+            {{ now().strftime('%Y-%m-%d ') }}
+            {% endif %}
+          time: >-
+            {{ alarm_hours }}:{{alarm_minutes }}:00
+        target:
+          entity_id: input_datetime.assist_alarmtime
+        alias: Set alarm
+      - service: input_boolean.turn_on
+        target:
+          entity_id: input_boolean.assist_alarm
+  assist_alarmtimestop:
+    alias: "Assist - AlarmTimeStop"
+    description: "Script for stopping or turning off the alarm using HA Assist."
+    icon: mdi:assistant
+    mode: single
+    variables:
+      settings: *settings
+    sequence:
+      - alias: Set variables
+        variables:
+          alarm_target: "{{ settings.get('alarm_target') }}"
+      - alias: Stop Media if media was actually set and playing (prevents other media from stopping).
+        choose:
+          - conditions:
+              - alias: Alarm was set as a media file
+                condition: template
+                value_template: "{{ alarm_tts == false }}"
+              - alias: Mediaplayer is actually playing
+                condition: state
+                entity_id: "{{ alarm_target }}"
+                state: "playing"
+            sequence:
+              - service: media_player.media_stop
+                target:
+                  entity_id: "{{ alarm_target }}"
+      - service: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.assist_alarm
+
+automation:
+  - alias: Assist - AlarmTimeReached
+    id: assist_alarmtimereached
+    description: Assist automation when set alarm time is reached.
+    trigger:
+      - platform: template
+        value_template: >-
+          {{ as_timestamp(states.input_datetime.assist_alarmtime.state) | round ==
+          as_timestamp(now()) | round  }}  
+        alias: Time equals set alarm
+    variables:
+      settings: *settings
+    condition:
+      - condition: state
+        entity_id: input_boolean.assist_alarm
+        state: "on"
+        alias: Alarm is set
+    action:
+      - alias: Set variables
+        variables:
+          alarm_target: "{{ settings.get('alarm_target') }}"
+          alarm_tts: "{{ settings.get('alarm_tts') }}"
+          tts_service: "{{ settings.get('tts_service') }}"
+          tts_message: "{{ settings.get('tts_message') }}"
+          media_location: "{{ settings.get('media_location') }}"
+          lights_turn_on: "{{ settings.get('lights_turn_on') }}"
+          lights_delay: "{{ settings.get('lights_delay') }}"
+          lights: "{{ settings.get('lights') }}"
+      - alias: Media file or TTS
+        choose:
+          - conditions:
+              - alias: Alarm is a media file
+                condition: template
+                value_template: "{{ alarm_tts == false }}"
+            sequence:
+              - alias: Play media
+                service: media_player.play_media
+                target:
+                  entity_id: >-
+                    {% if 'sensor.' in alarm_target %} states(alarm_target) {% else
+                    %} {{ alarm_target }} {% endif %}
+                data:
+                  media_content_id: "{{ media_location }}"
+                  announce: true
+                  media_content_type: music
+                enabled: true
+            alias: Media file
+        default:
+          - service: "{{ tts_service }}"
+            data:
+              cache: true
+              entity_id: >-
+                {% if 'sensor.' in alarm_target %} states(alarm_target) {% else %}
+                {{ alarm_target }} {% endif %}
+              message: >-
+                {% if 'sensor.' in tts_message %} states(tts_message) {% else %} {{
+                tts_message }} {% endif %}
+            alias: TTS
+      - service: input_boolean.turn_off
+        metadata: {}
+        data: {}
+        target:
+          entity_id: input_boolean.assist_alarm
+        alias: Turn off alarm boolean
+      - alias: Turn on light(s) if set to true
+        choose:
+          - conditions:
+              - condition: template
+                value_template: "{{ lights_turn_on == true }}"
+                alias: Lights_turn_on is true
+            sequence:
+              - delay:
+                  seconds: >-
+                    {% if lights_delay is defined %} {{ lights_delay }} {% else %} 5
+                    {% endif %}
+                alias: Delay lights turning on
+              - service: light.turn_on
+                target:
+                  entity_id: "{{ lights }}"
+                alias: Turn on lights
+            alias: Lights_turn_on is true
+    mode: single
+
+  - alias: Assist - AlarmStop
+    id: assist_alarmstop
+    description: Assist automation to stop media playing when alarm is turned off.
+    trigger:
+      - platform: state
+        entity_id:
+          - input_boolean.assist_alarm
+        from: "on"
+        to: "off"
+        alias: Input boolean turned off
+    variables:
+      settings: *settings
+    action:
+      - alias: Set variables
+        variables:
+          alarm_target: "{{ settings.get('alarm_target') }}"
+          alarm_tts: "{{ settings.get('alarm_tts') }}"
+      - alias: Media is actually set (prevents other media from stopping)
+        choose:
+          - conditions:
+              - alias: Alarm was set as a media file
+                condition: template
+                value_template: "{{ alarm_tts == false }}"
+              - alias: Mediaplayer is actually playing
+                condition: state
+                entity_id: "{{ alarm_target }}"
+                state: "playing"
+            sequence:
+              - service: media_player.media_stop
+                target:
+                  entity_id: "{{ alarm_target }}"
+
+input_boolean:
+  assist_alarm:
+    name: "Assist - Alarm"
+    icon: mdi:assistant
+    
+input_datetime:
+  assist_alarmtime:
+    name: "Assist - Alarmtime"
+    has_date: true
+    has_time: true
+    icon: mdi:assistant
+    
+intent_script: 
+  AlarmTimeSet:
+    async_action: false
+    action:
+      - service: script.assist_alarmTimeSet
+        data:
+          alarm_hours: "{{ alarm_hours }}"
+          alarm_minutes: "{{ alarm_minutes }}"
+
+  AlarmTimeStop:
+    async_action: false
+    action:
+      - service: script.assist_alarmTimeStop
