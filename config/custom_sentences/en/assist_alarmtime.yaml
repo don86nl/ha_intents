@@ -1,0 +1,40 @@
+language: "en"
+intents:
+  AlarmTimeStop:
+    data:
+      - sentences:
+          - "[would you] turn the alarm off"
+          - "(turn|stop) the alarm"
+  AlarmTimeSet:
+    data:
+      - sentences:
+          - "[would you] set (an|the|my) alarm for {alarm_hours}:{alarm_minutes}u"
+          - "[would you] wake me [up] (on|at) {alarm_hours}:{alarm_minutes}u"
+      - sentences:
+          - "[would you] set (an|the|my) alarm for {alarm_hours} o'clock"
+          - "[would you] wake me [up] (on|at) {alarm_hours} o'clock"
+        slots:
+          alarm_minutes: 0
+          
+lists:  
+  alarm_minutes:
+    range:
+      from: 0
+      to: 59
+  alarm_hours:
+    range:
+      from: 0
+      to: 23
+      
+responses:
+  intents:
+    AlarmTimeStop:
+      default: >-
+        {{ (["Sure. ", "Ofcourse. ", "Certainly. ", ""] | random) + (["Turning the alarm off.", "Turned off the alarm.", "Alarm turned off."] | random)}}
+    AlarmTimeSet:
+      default: >-
+        {{ (["Sure. ", "Ofcourse. ", "Certainly. ", ""] | random) + (["I will set an alarm ", "Alarm set for "] | random) }}
+        {% if slots.alarm_minutes != 0 %}{{ slots.alarm_hours }}:{{ slots.alarm_minutes }}u.
+        {% else %}
+        {% if (slots.alarm_hours | int) < 10 %}0{% endif%}{{slots.alarm_hours}}:00u.
+        {% endif %}
