@@ -15,7 +15,7 @@ If this is your first package for Home Assistant, then add the following line to
 5.  Restart Home Assistant.
 
 ## Available packages
-[![Watch the video](https://img.youtube.com/vi/ebFY_aTDBQI/hqdefault.jpg)](https://www.youtube.com/embed/ebFY_aTDBQI)
+[![Watch the video](https://img.youtube.com/vi/vAai49WE460/hqdefault.jpg)](https://www.youtube.com/embed/vAai49WE460)
 
 **1\. Good night routine**
 This package adds a (customizable) good night routine to your Assist functions.
