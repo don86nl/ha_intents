@@ -78,9 +78,8 @@ script:
                 condition: template
                 value_template: "{{ alarm_tts == false }}"
               - alias: Mediaplayer is actually playing
-                condition: state
-                entity_id: "{{ alarm_target }}"
-                state: "playing"
+                condition: template
+                value_template: "{{ states(alarm_target) == 'playing' }}"
             sequence:
               - service: media_player.media_stop
                 target:
