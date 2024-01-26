@@ -117,9 +117,6 @@ script:
               - alias: Alarm was set as a media file
                 condition: template
                 value_template: "{{ alarm_tts == false }}"
-              - alias: Mediaplayer is actually playing
-                condition: template
-                value_template: "{{ states(alarm_target) == 'playing' }}"
             sequence:
               - service: media_player.media_stop
                 target:
@@ -135,8 +132,7 @@ automation:
     trigger:
       - platform: template
         value_template: >-
-          {{ as_timestamp(states.input_datetime.assist_alarmtime.state) | round ==
-          as_timestamp(now()) | round  }}  
+          {{ as_timestamp(states.input_datetime.assist_alarmtime.state) | round == as_timestamp(now()) | round  }}  
         alias: Time equals set alarm
     variables:
       settings: *settings
@@ -150,17 +146,17 @@ automation:
         variables:
           alarm_target: |
             {%- if settings.get('alarm_target')[:13] == "media_player." %}
-            {{- settings.get('alarm_target')}}
-            {%- elif (settings.get('alarm_target')[:7] == "sensor." or settings.get('alarm_target')[:11] == "input_text.") and (states(settings.get('alarm_target')[:13] == "media_player.") %}
-            {{- states(settings.get('alarm_target')}}
-            {%- elif (settings.get('alarm_target')[:7] == "sensor." or settings.get('alarm_target')[:11] == "input_text.") and (states(settings.get('alarm_target')== "") %}
-            {{- settings.get('alarm_target_default') }}
+            {{- settings.get('alarm_target') }}
+            {%- elif (settings.get('alarm_target')[:7] == "sensor." or settings.get('alarm_target')[:11] == "input_text.") and (states(settings.get('alarm_target'))[:13] == "media_player.") %}
+            {{- states(settings.get('alarm_target')) }}
+            {%- elif (settings.get('alarm_target')[:7] == "sensor." or settings.get('alarm_target')[:11] == "input_text.") and (states(settings.get('alarm_target')) == "") %}
+            {{- settings.get('timer_target_default') }}
             {%- else %}
             {%- set media_player_list = states.media_player | map(attribute='entity_id') | list %}
-            {%- if "sensor." in settings.get('timer_target') or "input_text." in target_area %}
-            {%- set target_area = states(settings.get('alarm_target')%}
+            {%- if "sensor." in settings.get('alarm_target') or "input_text." in settings.get('alarm_target') %}
+            {%- set target_area = states(settings.get('alarm_target')) %}
             {%- else %}
-            {%- set target_area = settings.get('alarm_target')%}
+            {%- set target_area = settings.get('alarm_target') %}
             {%- endif %}        
             {%- for entity_id in media_player_list %}
             {%- if area_name(entity_id) | lower == target_area | lower %}
@@ -256,7 +252,26 @@ automation:
     action:
       - alias: Set variables
         variables:
-          alarm_target: "{{ settings.get('alarm_target') }}"
+          alarm_target: |
+            {%- if settings.get('alarm_target')[:13] == "media_player." %}
+            {{- settings.get('alarm_target') }}
+            {%- elif (settings.get('alarm_target')[:7] == "sensor." or settings.get('alarm_target')[:11] == "input_text.") and (states(settings.get('alarm_target'))[:13] == "media_player.") %}
+            {{- states(settings.get('alarm_target')) }}
+            {%- elif (settings.get('alarm_target')[:7] == "sensor." or settings.get('alarm_target')[:11] == "input_text.") and (states(settings.get('alarm_target')) == "") %}
+            {{- settings.get('timer_target_default') }}
+            {%- else %}
+            {%- set media_player_list = states.media_player | map(attribute='entity_id') | list %}
+            {%- if "sensor." in settings.get('alarm_target') or "input_text." in settings.get('alarm_target') %}
+            {%- set target_area = states(settings.get('alarm_target')) %}
+            {%- else %}
+            {%- set target_area = settings.get('alarm_target') %}
+            {%- endif %}        
+            {%- for entity_id in media_player_list %}
+            {%- if area_name(entity_id) | lower == target_area | lower %}
+            - {{ entity_id }}
+            {%- endif %}
+            {%- endfor %}
+            {%- endif %}  
           alarm_tts: "{{ settings.get('alarm_tts') }}"
       - alias: Media is actually set (prevents other media from stopping)
         choose:
@@ -264,10 +279,6 @@ automation:
               - alias: Alarm was set as a media file
                 condition: template
                 value_template: "{{ alarm_tts == false }}"
-              - alias: Mediaplayer is actually playing
-                condition: state
-                entity_id: "{{ alarm_target }}"
-                state: "playing"
             sequence:
               - service: media_player.media_stop
                 target:
