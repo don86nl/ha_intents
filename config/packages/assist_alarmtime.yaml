@@ -9,22 +9,24 @@ homeassistant:
       ########################################################
       ### SET THE VARIABLES HERE TO CUSTOMIZE YOUR ROUTINE ###
       ########################################################
-        alarm_target: "media_player.bedroom"  #Which device should play the alarm?
-        #You can also assign a sensor.entity_id to have a dynamic media_player entity.
-        
+        alarm_target: "bedroom"  #Which device or room should play the timer? #NOTE: If you choose a room, ALL media_players in that room will be played.
+        #You can also assign a sensor.entity_id or input_text to have a dynamic room or media_player assigned. 
+        #This can be usefull if you have a sensor monitoring where Assist is used, to use it in that specific room or device.
+        alarm_target_default: "media_player.bedroom" #Which media_player entity should be used if timer_target is none? (Used when dynamic targets are null.)
+
         # Alarm type
         alarm_tts: true                 #Set this to true if you want the alarm to be a tts message. Default is true.
         tts_service: "tts.cloud_say"    #Which TTS service to use? Default is "tts.cloud_say".
-        tts_message: "Goodmorning sunshine. Time to get up!" #You can also assign a sensor.entity_id to have a dynamic tts message.
+        tts_message: "Goodmorning sunshine! Time to get up!" #You can also assign a sensor.entity_id to have a dynamic tts message.
         
         #If alarm_tts is set to false, the media_location will automatically be used to play the target media file.
         media_location: "/media/local/wakeup.mp3" 
         
         # Lights
-        lights_turn_on: false           #Should lights be turned on when the alarm rings? Default is false.
+        lights_turn_on: true            #Should lights be turned on when the alarm rings? Default is false.
         lights_delay: 5                 #Seconds before lights should be turned on. Default is 5.
         lights:                         #Which light(s) should be turned on?
-          - light.bedroom
+          - light.slaapkamer
                 
       ########################################################
 
@@ -39,7 +41,26 @@ script:
     sequence:
       - alias: "Set variables"
         variables: &generic_vars
-          alarm_target:  "{{ settings.get('alarm_target') }}"
+          alarm_target: |
+            {%- if settings.get('alarm_target')[:13] == "media_player." %}
+            {{- settings.get('alarm_target')}}
+            {%- elif (settings.get('alarm_target')[:7] == "sensor." or settings.get('alarm_target')[:11] == "input_text.") and (states(settings.get('alarm_target')[:13] == "media_player.") %}
+            {{- states(settings.get('alarm_target')}}
+            {%- elif (settings.get('alarm_target')[:7] == "sensor." or settings.get('alarm_target')[:11] == "input_text.") and (states(settings.get('alarm_target')== "") %}
+            {{- settings.get('alarm_target_default') }}
+            {%- else %}
+            {%- set media_player_list = states.media_player | map(attribute='entity_id') | list %}
+            {%- if "sensor." in settings.get('timer_target') or "input_text." in target_area %}
+            {%- set target_area = states(settings.get('alarm_target')%}
+            {%- else %}
+            {%- set target_area = settings.get('alarm_target')%}
+            {%- endif %}        
+            {%- for entity_id in media_player_list %}
+            {%- if area_name(entity_id) | lower == target_area | lower %}
+            - {{ entity_id }}
+            {%- endif %}
+            {%- endfor %}
+            {%- endif %}  
           alarm_tts:  "{{ settings.get('alarm_tts') }}"
           tts_message: "{{ settings.get('tts_message') }}"
           media_location:  "{{ settings.get('media_location') }}"
@@ -70,7 +91,26 @@ script:
     sequence:
       - alias: Set variables
         variables:
-          alarm_target: "{{ settings.get('alarm_target') }}"
+          alarm_target: |
+            {%- if settings.get('alarm_target')[:13] == "media_player." %}
+            {{- settings.get('alarm_target')}}
+            {%- elif (settings.get('alarm_target')[:7] == "sensor." or settings.get('alarm_target')[:11] == "input_text.") and (states(settings.get('alarm_target')[:13] == "media_player.") %}
+            {{- states(settings.get('alarm_target')}}
+            {%- elif (settings.get('alarm_target')[:7] == "sensor." or settings.get('alarm_target')[:11] == "input_text.") and (states(settings.get('alarm_target')== "") %}
+            {{- settings.get('alarm_target_default') }}
+            {%- else %}
+            {%- set media_player_list = states.media_player | map(attribute='entity_id') | list %}
+            {%- if "sensor." in settings.get('timer_target') or "input_text." in target_area %}
+            {%- set target_area = states(settings.get('alarm_target')%}
+            {%- else %}
+            {%- set target_area = settings.get('alarm_target')%}
+            {%- endif %}        
+            {%- for entity_id in media_player_list %}
+            {%- if area_name(entity_id) | lower == target_area | lower %}
+            - {{ entity_id }}
+            {%- endif %}
+            {%- endfor %}
+            {%- endif %}  
       - alias: Stop Media if media was actually set and playing (prevents other media from stopping).
         choose:
           - conditions:
@@ -108,7 +148,26 @@ automation:
     action:
       - alias: Set variables
         variables:
-          alarm_target: "{{ settings.get('alarm_target') }}"
+          alarm_target: |
+            {%- if settings.get('alarm_target')[:13] == "media_player." %}
+            {{- settings.get('alarm_target')}}
+            {%- elif (settings.get('alarm_target')[:7] == "sensor." or settings.get('alarm_target')[:11] == "input_text.") and (states(settings.get('alarm_target')[:13] == "media_player.") %}
+            {{- states(settings.get('alarm_target')}}
+            {%- elif (settings.get('alarm_target')[:7] == "sensor." or settings.get('alarm_target')[:11] == "input_text.") and (states(settings.get('alarm_target')== "") %}
+            {{- settings.get('alarm_target_default') }}
+            {%- else %}
+            {%- set media_player_list = states.media_player | map(attribute='entity_id') | list %}
+            {%- if "sensor." in settings.get('timer_target') or "input_text." in target_area %}
+            {%- set target_area = states(settings.get('alarm_target')%}
+            {%- else %}
+            {%- set target_area = settings.get('alarm_target')%}
+            {%- endif %}        
+            {%- for entity_id in media_player_list %}
+            {%- if area_name(entity_id) | lower == target_area | lower %}
+            - {{ entity_id }}
+            {%- endif %}
+            {%- endfor %}
+            {%- endif %}  
           alarm_tts: "{{ settings.get('alarm_tts') }}"
           tts_service: "{{ settings.get('tts_service') }}"
           tts_message: "{{ settings.get('tts_message') }}"
@@ -116,6 +175,10 @@ automation:
           lights_turn_on: "{{ settings.get('lights_turn_on') }}"
           lights_delay: "{{ settings.get('lights_delay') }}"
           lights: "{{ settings.get('lights') }}"
+      - alias: Disable wakeword
+        service: switch.turn_off
+        data: 
+          entity_id: switch.raspiaudio_muse_luxe_8432fc_use_wake_word
       - alias: Media file or TTS
         choose:
           - conditions:
@@ -140,8 +203,11 @@ automation:
             data:
               cache: true
               entity_id: >-
-                {% if 'sensor.' in alarm_target %} states(alarm_target) {% else %}
-                {{ alarm_target }} {% endif %}
+                {% if 'sensor.' in alarm_target %}
+                {{ states(alarm_target)}}
+                {% else %}
+                {{ alarm_target }}
+                {% endif %}
               message: >-
                 {% if 'sensor.' in tts_message %} states(tts_message) {% else %} {{
                 tts_message }} {% endif %}
@@ -152,6 +218,10 @@ automation:
         target:
           entity_id: input_boolean.assist_alarm
         alias: Turn off alarm boolean
+      - alias: Turn on wakeword 
+        service: switch.turn_on
+        data:
+          entity_id: switch.raspiaudio_muse_luxe_8432fc_use_wake_word
       - alias: Turn on light(s) if set to true
         choose:
           - conditions:
