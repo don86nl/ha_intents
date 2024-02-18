@@ -1,0 +1,549 @@
+## Assist Package - Timers
+## Routine before going to sleep
+## https://github.com/don86nl/ha_intents
+
+### TO DO: OPTIE NAAM BIJ SENTENCES
+
+homeassistant:
+  customize:
+    script.assist_timerstart:
+      settings: &settings
+      ########################################################
+      ### SET THE VARIABLES HERE TO CUSTOMIZE YOUR ROUTINE ###
+      ########################################################
+        timer_target: "kitchen"                    #Which device or room should play the timer? #NOTE: If you choose a room, ALL media_players in that room will be played.
+        timer_target_default: "media_player.kitchen_assistant" #Which media_player entity should be used if timer_target is none? (Used when dynamic targets are null.)
+        #You can also assign a sensor.entity_id or input_text to have a dynamic room or media_player assigned. 
+        #This can be usefull if, for example, you have a sensor monitoring where Assist is activated, to use it in that specific room or device.
+        
+        # Timer settings
+        timer_tts: true                            #Set this to true if you want the timer to be a tts message. Default is true.
+        timer_tts_service: "tts.cloud_say"         #Which TTS service to use? Default is "tts.cloud_say".
+        timer_tts_message: "A set timer has finished." #You can also assign a sensor or input_text entity_id to have a dynamic tts message.
+        
+        #If timer_tts is set to false, the media_location will automatically be used to play the target media file.
+        timer_media_location: "/media/local/timer.mp3" 
+        
+        # Timer volume
+        timer_volume: 0.4                          #What volume level do you want the timer to play at? Device volume level will be restored after the timer has finished.
+      ########################################################
+
+script:
+  assist_timerstart:
+    alias: "Assist - TimerStart"
+    description: "Script for starting a timer using HA Assist."
+    icon: mdi:assistant
+    mode: single
+    variables:
+      settings: *settings
+    sequence:
+      - alias: "Set variables"
+        variables:
+          timer_location:  >-
+            {%- if settings.get('timer_target')[:13] == "media_player." %}
+            {{ area_name(settings.get('timer_target')) | lower }}
+            {% elif (settings.get('timer_target')[:7] == "sensor." or settings.get('timer_target')[:11] == "input_text.") and states(settings.get('timer_target'))[:13] == "media_player." %}
+            {{- states(settings.get('timer_target')) }}
+            {%- elif settings.get('timer_target')[:13] != "media_player." and settings.get('timer_target')[:7] != "sensor." and settings.get('timer_target')[:11] != "input_text." %}
+            {{- settings.get('timer_target') }}
+            {%- elif (settings.get('timer_target')[:7] == "sensor." or settings.get('timer_target')[:11] == "input_text.") and (states(settings.get('timer_target')) != "") and (states(settings.get('timer_target'))[:13] == "media_player.") %}
+            {{ area_name(settings.get('timer_target_default')) }}
+            {%- elif (settings.get('timer_target')[:7] == "sensor." or settings.get('timer_target')[:11] == "input_text.") %}
+            {% if states(settings.get('timer_target')) != "" and states(settings.get('timer_target')) != "not_home" and states(settings.get('timer_target')) != 0 %}
+            {{ states(settings.get('timer_target')) }}
+            {% else %}
+            {{- area_name(settings.get('timer_target_default')) | lower }}
+            {%- endif %}
+            {%- else %}
+            {{- area_name(settings.get('timer_target')) | lower }}
+            {%- endif %}
+      - alias: "Set timer location"
+        service: input_text.set_value
+        target:
+          entity_id: >-
+            {% if states('timer.assist_timer1') != 'active' and states('timer.assist_timer1') != 'paused' %}
+            input_text.assist_timer1_location
+            {% elif states('timer.assist_timer2') != 'active' and states('timer.assist_timer2') != 'paused' %}
+            input_text.assist_timer2_location
+            {% else %}
+            input_text.assist_timer3_location
+            {% endif%}
+        data:
+          value: "{{ timer_location }}"
+      - alias: "Start timer"
+        service: timer.start
+        data_template:
+          duration: "{{ duration }}"
+        target:      
+          entity_id: >-
+            {% if states('timer.assist_timer1') != 'active' and states('timer.assist_timer1') != 'paused' %} timer.assist_timer1
+            {% elif states('timer.assist_timer2') != 'active' and states('timer.assist_timer2') != 'paused' %} timer.assist_timer2
+            {% else %} timer.assist_timer3{% endif%}
+
+  assist_timerstop:
+    alias: "Assist - TimerStop"
+    description: "Script for stopping a timer using HA Assist."
+    icon: mdi:assistant
+    mode: single
+    variables:
+      entity_id: >-
+        {% if entity_id is set or entity_id != "" %}
+        {{ entity_id }}
+        {% else %}
+        null
+        {% endif %}
+    sequence:
+      - alias: Set variables
+        variables:
+          entity_id: >-
+            {% if entity_id is set or entity_id != "" %} {{ entity_id }} {% else %}
+            null {% endif %}
+      - choose:
+          - conditions:
+              - condition: template
+                value_template: "{{ entity_id[:18] == 'timer.assist_timer' }}"
+                alias: Single Timer
+            sequence:
+              - alias: "Single timer: Idle or active"
+                choose:
+                  - conditions:
+                      - condition: template
+                        value_template: "{{ states(entity_id) == 'idle' }}"
+                        alias: Timer not active
+                    sequence:
+                      - stop: Timer is not active
+                default:
+                  - service: timer.cancel
+                    target:
+                      entity_id: "{{ entity_id }}"
+                    alias: Cancel single timer
+                  - service: input_text.set_value
+                    data:
+                      value: "0"
+                    target:
+                      entity_id: |-
+                        {{ states.timer 
+                           | selectattr('state','eq','active') 
+                           | selectattr('entity_id','match','timer.assist_timer*')
+                           | map(attribute='entity_id') 
+                           | join('_location, ') | replace('timer.', 'input_text.') }}
+                    alias: Reset timer location value
+                  - stop: Timer cancelled
+          - conditions:
+              - condition: template
+                value_template: "{{ entity_id == 'null' }}"
+                alias: No specific Timer
+              - alias: Timer(s) are active
+                condition: template
+                value_template: |-
+                  {{ states.timer 
+                     | rejectattr('state','eq','idle') 
+                     | selectattr('entity_id','match','timer.assist_timer*')
+                     | map(attribute='entity_id') 
+                     | list
+                     | length > 0 }}
+            sequence:
+              - alias: "No specific timer: # active?"
+                choose:
+                  - conditions:
+                      - condition: template
+                        value_template: "{{ entity_id == 'null' }}"
+                        alias: No specific timer asked
+                      - alias: Multiple timers active
+                        condition: template
+                        value_template: |-
+                          {{ states.timer 
+                             | rejectattr('state','eq','idle') 
+                             | selectattr('entity_id','match','timer.assist_timer*')
+                             | map(attribute='entity_id') 
+                             | list
+                             | length > 1 }}
+                    sequence:
+                      - stop: Multiple timers active, none specified
+                default:
+                  - service: timer.cancel
+                    target:
+                      entity_id: |-
+                        {{ states.timer 
+                         | rejectattr('state','eq','idle') 
+                         | selectattr('entity_id','match','timer.assist_timer*')
+                         | map(attribute='entity_id') 
+                         | join(', ') }}
+                    alias: Cancel single timer
+                  - service: input_text.set_value
+                    metadata: {}
+                    data:
+                      value: "0"
+                    target:
+                      entity_id: |-
+                        {{ states.timer 
+                           | rejectattr('state','eq','idle') 
+                           | selectattr('entity_id','match','timer.assist_timer*')
+                           | map(attribute='entity_id') 
+                           | join('_location, ') | replace('timer.', 'input_text.') }}
+                    alias: Reset timer location value
+                  - stop: Timer cancelled
+            alias: No specific timer
+          - conditions:
+              - alias: All timers
+                condition: template
+                value_template: "{{ entity_id == 'all' }}"
+            sequence:
+              - alias: Timers active?
+                choose:
+                  - conditions:
+                      - condition: template
+                        value_template: |-
+                          {{ states.timer 
+                             | rejectattr('state','eq','idle') 
+                             | selectattr('entity_id','match','timer.assist_timer*')
+                             | map(attribute='entity_id') 
+                             | list
+                             | length == 0 }}
+                        alias: No timers active
+                    sequence:
+                      - stop: No timers active
+                    alias: No timers active
+                default:
+                  - service: timer.cancel
+                    target:
+                      entity_id: |-
+                        {{ states.timer 
+                         | rejectattr('state','eq','idle') 
+                         | selectattr('entity_id','match','timer.assist_timer*')
+                         | map(attribute='entity_id') 
+                         | join(', ') }}
+                    alias: Cancel all timers
+                  - stop: Cancel all timers
+            alias: All timers
+        
+  assist_timerpause:
+    alias: "Assist - TimerPause"
+    description: "Script for pausing a timer using HA Assist."
+    icon: mdi:assistant
+    mode: single
+    variables:
+      entity_id: >-
+        {% if entity_id is set or entity_id != "" %} {{ entity_id }} {% else %} null
+        {% endif %}
+      timer_action: >-
+        {% if timer_action is set or timer_action != "" %} {{ timer_action }} {%
+        else %} resume {% endif %}
+    sequence:
+      - choose:
+          - conditions:
+              - condition: template
+                value_template: "{{ entity_id[:18] == 'timer.assist_timer' }}"
+                alias: Single Timer
+            sequence:
+              - alias: "Single timer: Idle or active"
+                choose:
+                  - conditions:
+                      - condition: template
+                        value_template: "{{ states(entity_id) == 'idle' }}"
+                        alias: Timer not active
+                    sequence:
+                      - stop: Timer is not active
+                default:
+                  - alias: Pause or resume
+                    choose:
+                      - conditions:
+                          - condition: template
+                            value_template: "{{ timer_action == 'pause' }}"
+                            alias: Action = pause
+                        sequence:
+                          - service: timer.pause
+                            target:
+                              entity_id: "{{ entity_id }}"
+                            alias: Pause timer
+                          - stop: Pause timer
+                        alias: Pause
+                    default:
+                      - service: timer.start
+                        target:
+                          entity_id: "{{ entity_id }}"
+                        alias: Resume timer
+                      - stop: Resume timer
+          - conditions:
+              - condition: template
+                value_template: "{{ entity_id == 'null' }}"
+                alias: No specific Timer
+              - alias: Timer(s) are active
+                condition: template
+                value_template: |-
+                  {{ states.timer 
+                     | rejectattr('state','eq','idle') 
+                     | selectattr('entity_id','match','timer.assist_timer*')
+                     | map(attribute='entity_id') 
+                     | list
+                     | length > 0 }}
+            sequence:
+              - alias: "No specific timer: # active?"
+                choose:
+                  - conditions:
+                      - condition: template
+                        value_template: "{{ entity_id == 'null' }}"
+                        alias: No specific timer asked
+                      - alias: Multiple timers active
+                        condition: template
+                        value_template: |-
+                          {{ states.timer 
+                             | rejectattr('state','eq','idle') 
+                             | selectattr('entity_id','match','timer.assist_timer*')
+                             | map(attribute='entity_id') 
+                             | list
+                             | length > 1 }}
+                    sequence:
+                      - stop: Multiple timers active, none specified
+                default:
+                  - alias: Pause or resume
+                    choose:
+                      - conditions:
+                          - condition: template
+                            value_template: "{{ timer_action == 'pause' }}"
+                            alias: Action = pause
+                        sequence:
+                          - service: timer.pause
+                            target:
+                              entity_id: |-
+                                {{ states.timer 
+                                 | rejectattr('state','eq','idle') 
+                                 | selectattr('entity_id','match','timer.assist_timer*')
+                                 | map(attribute='entity_id') 
+                                 | join(', ') }}
+                            alias: Pause timer
+                          - stop: Pause timer
+                        alias: Pause
+                    default:
+                      - service: timer.start
+                        target:
+                          entity_id: |-
+                            {{ states.timer 
+                             | rejectattr('state','eq','idle') 
+                             | selectattr('entity_id','match','timer.assist_timer*')
+                             | map(attribute='entity_id') 
+                             | join(', ') }}
+                        alias: Resume timer
+                      - stop: Resume timer
+            alias: No specific timer
+          - conditions:
+              - alias: All timers
+                condition: template
+                value_template: "{{ entity_id == 'all' }}"
+            sequence:
+              - alias: Timers active?
+                choose:
+                  - conditions:
+                      - condition: template
+                        value_template: |-
+                          {{ states.timer 
+                             | rejectattr('state','eq','idle') 
+                             | selectattr('entity_id','match','timer.assist_timer*')
+                             | map(attribute='entity_id') 
+                             | list
+                             | length == 0 }}
+                        alias: No timers active
+                    sequence:
+                      - stop: No timers active
+                    alias: No timers active
+                default:
+                  - alias: Pause or resume
+                    choose:
+                      - conditions:
+                          - condition: template
+                            value_template: "{{ timer_action == 'pause' }}"
+                            alias: Action = pause
+                        sequence:
+                          - service: timer.pause
+                            target:
+                              entity_id: |-
+                                {{ states.timer 
+                                 | rejectattr('state','eq','idle') 
+                                 | selectattr('entity_id','match','timer.assist_timer*')
+                                 | map(attribute='entity_id') 
+                                 | join(', ') }}
+                            alias: Pause timer
+                          - stop: Pause timer
+                        alias: Pause
+                    default:
+                      - service: timer.start
+                        target:
+                          entity_id: |-
+                            {{ states.timer 
+                             | rejectattr('state','eq','idle') 
+                             | selectattr('entity_id','match','timer.assist_timer*')
+                             | map(attribute='entity_id') 
+                             | join(', ') }}
+                        alias: Resume timer
+                      - stop: Resume timer
+            alias: All timers
+
+automation:
+  - alias: Assist - TimerReached
+    id: assist_timerreached
+    description: Assist automation when set timer time is reached.
+    trigger:
+      - alias: "Any timer reached"
+        id: "timer_finished"
+        platform: event
+        event_type: timer.finished
+    condition:
+      - condition: template
+        value_template: "{{ trigger.event.data.entity_id[:18] == 'timer.assist_timer' }}"
+        alias: Finished timer is an assist timer
+    variables:
+      settings: *settings
+    action:
+      - alias: "Get generic variables from script"
+        variables:
+          timer_tts: "{{ settings.get('timer_tts') }}"
+          timer_tts_service: "{{ settings.get('timer_tts_service') }}"
+          timer_tts_message: "{{ settings.get('timer_tts_message') }}"
+          timer_media_location: "{{ settings.get('timer_media_location') }}"
+          timer_volume: "{{ settings.get('timer_volume') }}"
+          timer_target: >-
+            {%- if settings.get('timer_target')[:13] == "media_player." %}
+            {{- settings.get('timer_target') }}
+            {%- elif (settings.get('timer_target')[:7] == "sensor." or settings.get('timer_target')[:11] == "input_text.") and (states(settings.get('timer_target'))[:13] == "media_player.") %}
+            {{- states(settings.get('timer_target')) }}
+            {%- elif (settings.get('timer_target')[:7] == "sensor." or settings.get('timer_target')[:11] == "input_text.") and (states(settings.get('timer_target')) == "") %}
+            {{- settings.get('timer_target_default') }}
+            {%- else %}
+            {%- set media_player_list = states.media_player | map(attribute='entity_id') | list %}
+            {%- if "sensor." in settings.get('timer_target') or "input_text." in target_area %}
+            {%- set target_area = states(settings.get('timer_target')) %}
+            {%- else %}
+            {%- set target_area = settings.get('timer_target') %}
+            {%- endif %}        
+            {%- for entity_id in media_player_list %}
+            {%- if area_name(entity_id) | lower == target_area | lower %}
+            {{ entity_id }}
+            {%- endif %}
+            {%- endfor %}
+            {%- endif %}  
+      - alias: "Store current device volume"
+        variables:
+          device_volume: "{{ state_attr(timer_target, 'volume_level') }}"
+      - alias: "Set volume for timer"
+        service: media_player.volume_set
+        data:
+          volume_level: "{{ timer_volume }}"
+        target:
+          entity_id: "{{ timer_target }}"
+      - alias: Media file or TTS
+        choose:
+          - conditions:
+              - alias: Timer is a media file
+                condition: template
+                value_template: "{{ timer_tts == false }}"
+            sequence:
+              - alias: Play media
+                service: media_player.play_media
+                target:
+                  entity_id: "{{ timer_target }}"
+                data:
+                  media_content_id: "{{ timer_media_location }}"
+                  announce: true
+                  media_content_type: music
+                enabled: true
+            alias: Media file
+        default:
+          - delay: 
+              seconds: 1
+          - service: "{{ timer_tts_service }}"
+            data:
+              cache: true
+              entity_id: "{{ timer_target }}"
+              message: >-
+                {% if timer_tts_message[:7] == "sensor." or timer_tts_message[:11] == "input_text." %}
+                {{ states(timer_tts_message) }}
+                {% else %}
+                {{ timer_tts_message }}
+                {% endif %}
+            alias: TTS
+      - alias: "Restore device previous volume"
+        service: media_player.volume_set
+        data:
+          volume_level: "{{ device_volume }}"
+        target:
+          entity_id: "{{ timer_target }}"
+    mode: single
+  - alias: Assist - TimerFinished
+    id: assist_timerfinished
+    description: Assist automation when set timer time is finished.
+    trigger:
+      - platform: state
+        entity_id:
+          - timer.assist_timer1
+          - timer.assist_timer2
+          - timer.assist_timer3
+        to: "idle"
+        alias: Assist timer finished or cancelled
+    condition:
+      - condition: template
+        value_template: "{{ trigger.from_state != trigger.to_state }}"
+        alias: "Timer was active or paused"
+    action:
+      - delay: 
+          seconds: 3
+        alias: "Delay for Timer Reached automation"
+      - alias: "Reset timer location"
+        service: input_text.set_value
+        target:
+          entity_id: "{{ 'input_text.' + trigger.entity_id[6:] + '_location' }}"
+        data:
+          value: ""
+    mode: parallel
+
+timer:
+  assist_timer1:
+    name: "Assist - Timer 1"
+    icon: mdi:assistant
+    restore: true
+  assist_timer2:
+    name: "Assist - Timer 2"
+    icon: mdi:assistant
+    restore: true
+  assist_timer3:
+    name: "Assist - Timer 3"
+    icon: mdi:assistant
+    restore: true
+
+input_text:
+  assist_timer1_location:
+    name: "Assist - Timer 1 Location"
+    icon: mdi:assistant
+    max: 255
+  assist_timer2_location:
+    name: "Assist - Timer 2 Location"
+    icon: mdi:assistant
+    max: 255
+  assist_timer3_location:
+    name: "Assist - Timer 3 Location"
+    icon: mdi:assistant
+    max: 255
+    
+intent_script: 
+  TimerStart:
+    async_action: false
+    action:
+      - service: script.assist_TimerStart
+        data:
+          duration: "{{hours | int(default=0)}}:{{ minutes | int(default=0) }}:{{ seconds | int(default=0) }}"
+  TimerStop:
+    async_action: true
+    action:
+      - service: script.assist_TimerStop
+        data:
+          entity_id: "{{ entity_id }}"
+  TimerPause:
+    async_action: true
+    action:
+      - service: script.assist_TimerPause
+        data:
+          entity_id: "{{ entity_id }}"
+          timer_action: "{{ timer_action }}"
+  TimerDuration:
+    async_action: true
+    action:
+      - stop: ""
