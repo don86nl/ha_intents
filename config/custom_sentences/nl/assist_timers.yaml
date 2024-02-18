@@ -1,0 +1,240 @@
+language: "nl"
+intents:
+  TimerStop:
+    data:
+      - sentences:
+          - "(stop|annuleer|<zou>) [de] {entity_id} timer[s] [[willen|kunnen] <doe>] [(stoppen|annuleren|uitzetten)]"
+          - "(stop|annuleer|<zou>) timer {entity_id} [[willen|kunnen] <doe>] [(stoppen|annuleren|uitzetten)]"
+      - sentences:
+          - "(stop|annuleer|<zou>) [de] timer [[willen|kunnen] <doe>] [(stoppen|annuleren|uitzetten)]"
+        slots:
+          entity_id: "null"
+  TimerPause:
+    data:
+      - sentences:
+          - "(pauzeer|onderbreek|<zou>) [de] {entity_id} timer[s] [[willen|kunnen] <doe>] [(pauzeren|onderbreken)]"
+          - "(pauzeer|onderbreek|<zou>) timer {entity_id} [[willen|kunnen] <doe>] [(pauzeren|onderbreken)]"
+        slots:
+          timer_action: "pause"
+      - sentences:
+          - "(pauzeer|onderbreek|<zou>) [de] timer [[willen|kunnen] <doe>] [(pauzeren|onderbreken)]"
+        slots:
+          entity_id: "null"
+          timer_action: "pause"
+      - sentences:
+          - "(hervat|start|<zou>) [de] {entity_id} timer[s] [[willen|kunnen] <doe>] [(hervatten|starten)]"
+          - "(hervat|start|<zou>) timer {entity_id} [[willen|kunnen] <doe>] [(hervatten|startten)]"
+        slots:
+          timer_action: "resume"
+      - sentences:
+          - "(hervat|start|<zou>) [de] timer [[willen|kunnen] <doe>] [(hervatten|startten)]"
+        slots:
+          entity_id: "null"
+          timer_action: "resume"
+          
+  TimerDuration:
+    data:
+      - sentences:
+          - "(hoe lang|hoeveel tijd) nog op de {entity_id} timer"
+          - "hoe lang duurt de {entity_id} timer nog"
+      - sentences:
+          - "(hoe lang|hoeveel tijd) nog op de timer[s]"
+          - "hoe lang [duurt|duren] de timer[s] nog"
+        slots:
+          entity_id: "null"
+  TimerStart:
+    data:
+#Alle tijden
+      - sentences:
+          - "(start|zet|<zou>) [een] timer (voor|van) {hours} (uur|uren) [en] {minutes} (minuut|minuten) [en] {seconds} (seconde|seconden) [[willen|kunnen] <doe>] [starten]"        
+#Alleen uur
+      - sentences:
+          - "(start|zet|<zou>) [een] timer (voor|van) {hours} (uur|uren) [[willen|kunnen] <doe>] [starten]"
+        slots:
+          seconds: 0
+          minutes: 0
+#Alleen minuut
+      - sentences:
+          - "(start|zet|<zou>) [een] timer (voor|van) {minutes} (minuut|minuten) [[willen|kunnen] <doe>] [starten]"
+        slots:
+          seconds: 0
+          hours: 0
+#Alleen seconde
+      - sentences:
+          - "(start|zet|<zou>) [een] timer (voor|van) {seconds} (seconde|seconden) [[willen|kunnen] <doe>] [starten]"
+        slots:
+          minutes: 0
+          hours: 0
+#Geen uur, wel minuten en seconden
+      - sentences:
+          - "(start|zet|<zou>) [een] timer (voor|van) {minutes} (minuut|minuten) [en] {seconds} (seconde|seconden) [[willen|kunnen] <doe>] [starten]"
+        slots:
+          hours: 0   
+#Geen seconden, wel uren en minuten
+      - sentences:
+          - "(start|zet|<zou>) [een] timer (voor|van) {hours} (uur|uren) [en] {minutes} (minuut|minuten) [[willen|kunnen] <doe>] [starten]"
+        slots:
+          seconds: 0
+#Halven
+      - sentences:
+          - "(start|zet|<zou>) [een] timer (voor|van) [{minutes}][ ]([en] [een] half | [en] [een] halve) minuut [[willen|kunnen] <doe>] [starten]"
+          - "(start|zet|<zou>) [een] timer (voor|van) (0,5|0.5) minuut [[willen|kunnen] <doe>] [starten]"
+        slots:
+          hours: 0
+          seconds: 30
+      - sentences:
+          - "(start|zet|<zou>) [een] timer (voor|van) (anderhalve|anderhalf) minuut [[willen|kunnen] <doe>] [starten]"
+          - "(start|zet|<zou>) [een] timer (voor|van) (1,5|1.5) minuut [[willen|kunnen] <doe>] [starten]"
+        slots:
+          hours: 0
+          seconds: 30
+          minutes: 1
+      - sentences:
+          - "(start|zet|<zou>) [een] timer (voor|van) [{hours}][ ]([en] [een] half | [en] [een] halve) uur [[willen|kunnen] <doe>] [starten]"
+        slots:
+          minutes: 30
+          seconds: 0
+      - sentences:
+          - "(start|zet|<zou>) [een] timer (voor|van) (anderhalve|anderhalf) uur [[willen|kunnen] <doe>] [starten]"
+          - "(start|zet|<zou>) [een] timer (voor|van) (1,5|1.5) uur [[willen|kunnen] <doe>] [starten]"
+        slots:
+          hours: 1
+          seconds: 0
+          minutes: 30
+          
+lists:
+  entity_id:
+    values:
+      - in: "(eerste|een|één|1)"
+        out: "timer.assist_timer1"
+      - in: "(tweede|twee|2)"
+        out: "timer.assist_timer2"
+      - in: "(derde|drie|3)"
+        out: "timer.assist_timer3"
+      - in: "(alle|iedere)"
+        out: "all"
+  seconds:
+    range:
+      from: 0
+      to: 120    
+  minutes:
+    range:
+      from: 0
+      to: 120
+  hours:
+    range:
+      from: 0
+      to: 24
+      
+responses:
+  intents:
+    TimerStop:
+      default: >
+        {%- set timer_amount = states.timer 
+              | selectattr('state','eq','active') 
+              | selectattr('entity_id','match','timer.assist_timer*')
+              | map(attribute='entity_id') 
+              | list
+              | length -%}
+        {% if timer_amount == 0 and
+             (as_timestamp(now()) - as_timestamp(states.timer.assist_timer1.last_changed) > 3 and states('timer.assist_timer1') == 'idle') and 
+             (as_timestamp(now()) - as_timestamp(states.timer.assist_timer2.last_changed) > 3 and states('timer.assist_timer2') == 'idle') and
+             (as_timestamp(now()) - as_timestamp(states.timer.assist_timer3.last_changed) > 3 and states('timer.assist_timer3') == 'idle') %}
+        Er zijn momenteel geen timers actief. 
+        {% elif (slots_entity_id == 'timer.assist_timer1' and states('timer.assist_timer1') == 'idle') or
+             (slots_entity_id == 'timer.assist_timer2' and states('timer.assist_timer2') == 'idle') or 
+             (slots_entity_id == 'timer.assist_timer3' and states('timer.assist_timer3') == 'idle') %}
+        Deze timer is niet actief.
+        {% elif timer_amount > 1 and slots_entity_id == 'null' %}
+        Er zijn meerdere timers actief. 
+        {{ (["Specificeer alstublieft welke timer u bedoelt.", "Geef alstublieft aan welke timer u bedoelt.", "Benoem alstublieft welke timer u bedoelt.", ""] | random) }}
+        {% elif slots_entity_id == 'all' %}
+        {{ (["Akkoord. ", "Begrepen. ", "Goed. ", ""] | random) }} Alle timers gestopt.
+        {% else %}
+        {{ (["Akkoord. ", "Begrepen. ", "Goed. ", ""] | random) }}Timer gestopt.
+        {% endif %} 
+    TimerPause:
+      default: >
+        {%- if slots.timer_action is set or slots.timer_action != "" -%}
+          {%- set timer_action = slots.timer_action -%}
+        {%- else -%}
+          {%- set timer_action = "resume" -%}
+        {%- endif -%}
+        {%- set timer_amount = states.timer 
+           | selectattr('state','eq','active') 
+           | selectattr('entity_id','match','timer.assist_timer*')
+           | map(attribute='entity_id') 
+           | list
+           | length -%}
+        {% if timer_amount == 0 %}
+        Er zijn momenteel geen timers actief. 
+        {% elif timer_amount > 1 and slots.entity_id == 'null' %}
+        Er zijn meerdere timers actief. 
+        {{ (["Specificeer alstublieft welke timer u bedoelt.", "Geef alstublieft aan welke timer u bedoelt.", "Benoem alstublieft welke timer u bedoelt.", ""] | random) }}
+        {% elif slots.entity_id == 'all' %}
+        {{ (["Akkoord. ", "Begrepen. ", "Goed. ", ""] | random) }}
+        Alle timers {% if timer_action == "pause" %}gepauzeerd{% else %}hervat{% endif %}.
+        {% elif (as_timestamp(now()) - as_timestamp(states.timer.assist_timer1.last_changed) < 3 and states('timer.assist_timer1') == 'idle') or 
+                (as_timestamp(now()) - as_timestamp(states.timer.assist_timer2.last_changed) < 3 and states('timer.assist_timer2') == 'idle') or
+                (as_timestamp(now()) - as_timestamp(states.timer.assist_timer3.last_changed) < 3 and states('timer.assist_timer3') == 'idle') %}
+        Timer {% if timer_action == "pause" %}gepauzeerd{% else %}hervat{% endif %}.
+        {% elif (timer_amount == 1 and slots.entity_id == 'null') or
+           (slots.entity_id == 'timer.assist_timer1' and states('timer.assist_timer1') != 'idle') or 
+           (slots.entity_id == 'timer.assist_timer2' and states('timer.assist_timer2') != 'idle') or
+           (slots.entity_id == 'timer.assist_timer3' and states('timer.assist_timer3') != 'idle') %}
+        {{ (["Akkoord. ", "Begrepen. ", "Goed. ", ""] | random) }}Timer {% if timer_action == "pause" %}gepauzeerd{% else %}hervat{% endif %}.
+        {% else %}
+        Deze timer is momenteel niet actief.  
+        {% endif %}   
+    TimerDuration:
+      default: >
+        {%- set timer_amount = states.timer 
+           | selectattr('state','eq','active') 
+           | selectattr('entity_id','match','timer.assist_timer*')
+           | map(attribute='entity_id') 
+           | list
+           | length -%}          
+        {% if timer_amount == 0 %}
+        Er zijn momenteel geen timers actief. 
+        {% else %}
+          {%- if slots.entity_id != 'all' and slots.entity_id != 'null' %}
+          {%- set active_timers = states.timer 
+             | selectattr('state','eq','active') 
+             | selectattr('entity_id','match',slots.entity_id)
+             | list -%}
+          {%- else%}
+          {%- set active_timers = states.timer 
+             | selectattr('state','eq','active') 
+             | selectattr('entity_id','match','timer.assist_timer*')
+             | list -%}
+          {%- endif %}
+          {% if active_timers|length == 0 %}
+            {%- if slots.entity_id != 'all' and slots.entity_id != 'null' %}Deze timer is niet actief.
+            {%- else %}Er zijn momenteel geen timers actief. {%- endif %}{%
+             elif active_timers|length > 1 %}Er zijn momenteel {{active_timers|length }} timers actief. {%
+             endif %}{%
+             for timer in active_timers %}{%
+             set timer_id = timer.entity_id %}{%
+             set timer_finishes_at = state_attr(timer_id, 'finishes_at') %}{%
+  
+             set time_remaining = as_datetime(timer_finishes_at) - now() %}{%
+             set hours_remaining = time_remaining.total_seconds() // 3600 %}{%
+             set minutes_remaining = (time_remaining.total_seconds() % 3600) // 60 %}{%
+             set seconds_remaining = time_remaining.total_seconds() % 60 %}{%
+             
+             if timer.state == "active" or timer.state == "paused" %}{%
+               if slots.entity_id != timer_id 
+                 %}{{ state_attr(timer_id, 'friendly_name')[9:] }} {%
+                 if timer.state == "paused" %} is gepauzeerd en {% endif %}heeft nog {%
+               else %}Nog {% endif %}{%
+               if hours_remaining > 0 %}{{ hours_remaining | round }} uur {% endif %}{%
+               if minutes_remaining == 1 %}1 minuut {% endif %}{%
+               if minutes_remaining > 1 %}{{ minutes_remaining | round }} minuten {% endif %}{%
+               if seconds_remaining == 1 and hours_remaining == 0%}1 seconde {% endif %}{%
+               if seconds_remaining > 1 and hours_remaining == 0 %}{{ seconds_remaining | round }} seconden {% endif %}te gaan. {%
+             endif %}{%
+             endfor %}
+        {% endif %}
+    TimerStart:
+      default: >
+        {{ (["Geen probleem. ", "Goed. ", "Natuurlijk. ", ""] | random) + (["Ik start de timer voor ", "Timer gestart voor ", "Ik zet een timer voor ", "Timer geactiveerd voor "] | random)}}{% if (slots.hours | int(default=0)) == 1 %}{{ (slots.hours | int)}} uur{% elif (slots.hours | int(default=0)) > 1 %}{{ (slots.hours | int)}} uren{% endif %}{% if (slots.hours | int(default=0)) > 0 and ((slots.minutes | int(default=0)) > 0 or (slots.seconds | int(default=0)) > 0) %} en {% endif %}{% if (slots.minutes | int(default=0)) == 1 %}{{ (slots.minutes | int)}} minuut{% elif (slots.minutes | int(default=0)) > 1 %}{{ (slots.minutes | int)}} minuten{% endif %}{% if (slots.minutes | int(default=0)) > 0 and (slots.seconds | int(default=0)) > 0 %} en {% endif %}{% if (slots.seconds | int(default=0)) == 1 %}{{ (slots.seconds | int)}} seconde{% elif (slots.seconds | int(default=0)) > 1 %}{{ (slots.seconds | int)}} seconden{% endif %}.
