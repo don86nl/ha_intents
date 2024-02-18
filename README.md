@@ -38,17 +38,12 @@ You can ask it to set an alarm for a specific time. An automation is included wh
 
 
 **3\. Timers**
-THIS SCRIPT WILL BE UPDATED TO BE USED WITH PACKAGES! DO NOT USE AT THIS MOMENT!
+This package adds timer functionality to Home Assistant's Assist.
+For now, it adds the ability to start, pause, resume and stop timers. You can also ask Assist how much time is left on all or a specific timer.
 
-This script adds timer functionality to Home Assistant's Assist.
-For now, it adds the ability to start and stop timers and ask how much time is left on all or a specific timer.
-
-# FAQ
-
-1.  Why delays?
-    Sometimes Assist is slower in its answer than the service performing the action.
-    For example, we ask Assist to stop a timer. The service will stop the timer, then Assist will tell there are no timers active (instead of 'Okay, stopping the timer).
+*Be sure to set the variables in the package file. You must specify a location and default media_player in the first two lines.*
 
 # Known bugs
 
-1.  When stopping a timer, Assist currently responds with 'that timer is not running'. The timer(s) is/are stopped nonetheless.
+1.
+  You can ask assist to stop a timer which isn't running. It will always answer like it is stopping it. Unsure why this is happening...
