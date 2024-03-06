@@ -3,38 +3,38 @@ intents:
   TimerStop:
     data:
       - sentences:
-          - "[<would>] (stop|cancel|turn off) [the] {entity_id} timer[s]"
+          - "(stop|cancel|turn off) [the] {entity_id} timer[s]"
       - sentences:
-          - "[<would>] (stop|cancel|turn off) [the] timer[s]"
+          - "(stop|cancel|turn off) [the] timer[s]"
         slots:
           entity_id: "null"
   TimerPause:
     data:
       - sentences:
-          - "[<would>] (pause|interrupt) [the] {entity_id} timer[s]"
+          - "(pause|interrupt) [the] {entity_id} timer[s]"
         slots:
           timer_action: "pause"
       - sentences:
-          - "[<would>] (pause|interrupt) [the] timer[s]"
+          - "(pause|interrupt) [the] timer[s]"
         slots:
           entity_id: "null"
           timer_action: "pause"
       - sentences:
-          - "[<would>] (pause|interrupt) all timer[s]"
+          - "(pause|interrupt) all timer[s]"
         slots:
           entity_id: "all"
           timer_action: "pause"
       - sentences:
-          - "[<would>] (resume|continue) [the] {entity_id} timer[s]"
+          - "(resume|continue) [the] {entity_id} timer[s]"
         slots:
           timer_action: "resume"
       - sentences:
-          - "[<would>] (resume|continue) [the] timer[s]"
+          - "(resume|continue) [the] timer[s]"
         slots:
           entity_id: "null"
           timer_action: "resume"
       - sentences:
-          - "[<would>] (resume|continue) all timer[s]"
+          - "(resume|continue) all timer[s]"
         slots:
           entity_id: "all"
           timer_action: "resume"
