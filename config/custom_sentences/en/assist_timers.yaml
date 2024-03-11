@@ -56,30 +56,33 @@ intents:
 #Alle tijden
       - sentences:
           - "start [a] timer (for|with) {hours} hour[s] [and] {minutes} minute[s] [and] {seconds} seconde[s]"
-#Alleen uur
+#Only hour
       - sentences:
-          - "start [a] timer (for|with) {hours} hour[s]"
+          - "start [(a|an)] timer (for|with) {hours} hour[s]"
+          - "set [(a|an)] {hours} hour[s] timer"
         slots:
           seconds: 0
           minutes: 0
-#Alleen minuut
+#Only minutes
       - sentences:
           - "start [a] timer (for|with) {minutes} minute[s]"
+          - "set [(a|an)] {minutes} minute[s] timer"
         slots:
           seconds: 0
           hours: 0
-#Alleen seconde
+#Only secondes
       - sentences:
           - "start [a] timer (for|with) {seconds} seconde[s]"
+          - "set [(a|an)] {seconds} second[s] timer"
         slots:
           minutes: 0
           hours: 0
-#Geen uur, wel minuten en seconden
+#No hour, yes minutes en secondes
       - sentences:
           - "start [a] timer (for|with) {minutes} minute[s] [and] {seconds} seconde[s]"
         slots:
           hours: 0   
-#Geen seconden, wel uren en minuten
+#No secondes, yes hours and minutes
       - sentences:
           - "start [a] timer (for|with) {hours} hour[s] [and] {minutes} minute[s]"
         slots:
