@@ -1,4 +1,4 @@
-language: "nl"
+language: "en"
 intents:
   TimerStop:
     data:
@@ -55,33 +55,33 @@ intents:
     data:
 #Alle tijden
       - sentences:
-          - "[<would>] start [a] timer (for|with) {hours} hour[s] [and] {minutes} minute[s] [and] {seconds} seconde[s]"
+          - "start [a] timer (for|with) {hours} hour[s] [and] {minutes} minute[s] [and] {seconds} seconde[s]"
 #Alleen uur
       - sentences:
-          - "[<would>] start [a] timer (for|with) {hours} hour[s]"
+          - "start [a] timer (for|with) {hours} hour[s]"
         slots:
           seconds: 0
           minutes: 0
 #Alleen minuut
       - sentences:
-          - "[<would>] start [a] timer (for|with) {minutes} minute[s]"
+          - "start [a] timer (for|with) {minutes} minute[s]"
         slots:
           seconds: 0
           hours: 0
 #Alleen seconde
       - sentences:
-          - "[<would>] start [a] timer (for|with) {seconds} seconde[s]"
+          - "start [a] timer (for|with) {seconds} seconde[s]"
         slots:
           minutes: 0
           hours: 0
 #Geen uur, wel minuten en seconden
       - sentences:
-          - "[<would>] start [a] timer (for|with) {minutes} minute[s] [and] {seconds} seconde[s]"
+          - "start [a] timer (for|with) {minutes} minute[s] [and] {seconds} seconde[s]"
         slots:
           hours: 0   
 #Geen seconden, wel uren en minuten
       - sentences:
-          - "[<would>] start [a] timer (for|with) {hours} hour[s] [and] {minutes} minute[s]"
+          - "start [a] timer (for|with) {hours} hour[s] [and] {minutes} minute[s]"
         slots:
           seconds: 0
           
