@@ -22,7 +22,9 @@ homeassistant:
         timer_tts_target: "tts.home_assistant_cloud"   #Which TTS target to use, e.g. piper or ha cloud? Default is "tts.home_assistant_cloud".
         timer_tts_message: "A set timer has finished." #You can also assign a sensor or input_text entity_id to have a dynamic tts message.
         
-        #If timer_tts is set to false, the media_location will automatically be used to play the target media file.
+        #If timer_tts is set to false, the media_location will automatically be used to play the target media file. 
+        #Use filenamer timer.mp3 to be able to stop the music as well. (For playback recognition). 
+        #Case sensitive (timer.mp3 vs Timer.mp3)
         timer_media_location: "/media/local/timer.mp3" 
         
         # Timer volume
@@ -100,6 +102,32 @@ script:
             {% if entity_id is set or entity_id != "" %} {{ entity_id }} {% else %}
             null {% endif %}
       - choose:
+          - conditions:
+              - alias: Timer is a media file
+                condition: template
+                value_template: "{{ timer_tts == false }}"
+              - condition: template
+                value_template: |-
+                  {% set mediaplayer = namespace(entity=[]) %}
+                  {% for player in states.media_player %}
+                    {%- if ((state_attr(player.entity_id, 'media_content_id') |lower != 'none' and state_attr(player.entity_id, 'media_content_id')[:47][38:] == 'timer.mp3') or state_attr(player.entity_id, 'media_title') | lower == 'timer') and states(player.entity_id) == 'playing' -%}
+                      {%- set mediaplayer.entity = player.entity_id -%}
+                    {% endif -%}
+                  {% endfor %}
+                  {{ mediaplayer.entity[:12] == 'media_player' }}
+            sequence:
+               - service: media_player.media_stop
+                 target:
+                  entity_id: >-
+                    {% set mediaplayer = namespace(entity=[]) %}
+                    {% for player in states.media_player %}
+                      {% if ((state_attr(player.entity_id, 'media_content_id') |lower != 'none' and state_attr(player.entity_id, 'media_content_id')[:47][38:] == 'timer.mp3') or state_attr(player.entity_id, 'media_title') | lower == 'timer') and states(player.entity_id) == 'playing' %}
+                        {% set mediaplayer.entity = player.entity_id %}
+                      {% endif %}
+                    {% endfor %}
+                    {{ mediaplayer.entity }}
+                 alias: Stop timer music
+            alias: Stop Timer music
           - conditions:
               - condition: template
                 value_template: "{{ entity_id[:18] == 'timer.assist_timer' }}"
