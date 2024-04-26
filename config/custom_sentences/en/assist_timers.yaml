@@ -122,7 +122,15 @@ responses:
               | map(attribute='entity_id') 
               | list
               | length -%}
-        {% if timer_amount == 0 and
+        {% set mediaplayer = namespace(entity=[]) %}
+        {% for player in states.media_player %}
+          {%- if ((state_attr(player.entity_id, 'media_content_id') |lower != 'none' and state_attr(player.entity_id, 'media_content_id')[:47][38:] == 'Timer.mp3') or state_attr(player.entity_id, 'media_title') | lower == 'timer') and states(player.entity_id) == 'playing' -%}
+            {%- set mediaplayer.entity = player.entity_id -%}
+          {% endif -%}
+        {% endfor %}
+        {% if mediaplayer.entity[:12] == 'media_player' %}
+        {{ (["Understood. ", "Okay. ", "Of course. ", ""] | random) }}Timer stopped.
+        {% elif timer_amount == 0 and
              (as_timestamp(now()) - as_timestamp(states.timer.assist_timer1.last_changed) > 3 and states('timer.assist_timer1') == 'idle') and 
              (as_timestamp(now()) - as_timestamp(states.timer.assist_timer2.last_changed) > 3 and states('timer.assist_timer2') == 'idle') and
              (as_timestamp(now()) - as_timestamp(states.timer.assist_timer3.last_changed) > 3 and states('timer.assist_timer3') == 'idle') %}
