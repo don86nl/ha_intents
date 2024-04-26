@@ -17,8 +17,9 @@ homeassistant:
         #This can be usefull if, for example, you have a sensor monitoring where Assist is activated, to use it in that specific room or device.
         
         # Timer settings
-        timer_tts: true                            #Set this to true if you want the timer to be a tts message. Default is true.
-        timer_tts_service: "tts.cloud_say"         #Which TTS service to use? Default is "tts.cloud_say".
+        timer_tts: true                                #Set this to true if you want the timer to be a tts message. Default is true.
+        timer_tts_service: "tts.speak"                 #Which TTS service to use? Default is "tts.speak".
+        timer_tts_target: "tts.home_assistant_cloud"   #Which TTS target to use, e.g. piper or ha cloud? Default is "tts.home_assistant_cloud".
         timer_tts_message: "A set timer has finished." #You can also assign a sensor or input_text entity_id to have a dynamic tts message.
         
         #If timer_tts is set to false, the media_location will automatically be used to play the target media file.
@@ -398,6 +399,7 @@ automation:
         variables:
           timer_tts: "{{ settings.get('timer_tts') }}"
           timer_tts_service: "{{ settings.get('timer_tts_service') }}"
+          timer_tts_target: "{{ settings.get('timer_tts_target') }}"
           timer_tts_message: "{{ settings.get('timer_tts_message') }}"
           timer_media_location: "{{ settings.get('timer_media_location') }}"
           timer_volume: "{{ settings.get('timer_volume') }}"
@@ -451,6 +453,8 @@ automation:
           - delay: 
               seconds: 1
           - service: "{{ timer_tts_service }}"
+            target:
+              entity_id: "{{ timer_tts_target }}"
             data:
               cache: true
               entity_id: "{{ timer_target }}"
