@@ -432,7 +432,9 @@ automation:
           timer_media_location: "{{ settings.get('timer_media_location') }}"
           timer_volume: "{{ settings.get('timer_volume') }}"
           timer_target: >-
-            {%- if settings.get('timer_target')[:13] == "media_player." %}
+            {%- if settings.get('timer_target')[:13] == "" %}
+            {{- settings.get('timer_target_default') }}
+            {%- elif settings.get('timer_target')[:13] == "media_player." %}
             {{- settings.get('timer_target') }}
             {%- elif (settings.get('timer_target')[:7] == "sensor." or settings.get('timer_target')[:11] == "input_text.") and (states(settings.get('timer_target'))[:13] == "media_player.") %}
             {{- states(settings.get('timer_target')) }}
