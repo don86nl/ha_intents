@@ -2,8 +2,6 @@
 ## Routine before going to sleep
 ## https://github.com/don86nl/ha_intents
 
-### TO DO: OPTIE NAAM BIJ SENTENCES
-
 homeassistant:
   customize:
     script.assist_timerstart:
