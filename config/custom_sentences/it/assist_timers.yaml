@@ -1,0 +1,222 @@
+language: "it"
+intents:
+  TimerStop:
+    data:
+      - sentences:
+          - "(ferma|cancella|spegni) [il] timer {entity_id}"
+      - sentences:
+          - "(ferma|cancella|spegni) [il] timer"
+        slots:
+          entity_id: "null"
+  TimerPause:
+    data:
+      - sentences:
+          - "(pausa|interrompi) [il] timer {entity_id}"
+        slots:
+          timer_action: "pause"
+      - sentences:
+          - "(pausa|interrompi) [il] timer"
+        slots:
+          entity_id: "null"
+          timer_action: "pause"
+      - sentences:
+          - "(pausa|interrompi) tutti i timer"
+        slots:
+          entity_id: "all"
+          timer_action: "pause"
+      - sentences:
+          - "(riprendi|continua) [il] timer {entity_id}"
+        slots:
+          timer_action: "resume"
+      - sentences:
+          - "(riprendi|continua) [il] timer"
+        slots:
+          entity_id: "null"
+          timer_action: "resume"
+      - sentences:
+          - "(riprendi|continua) tutti i timer"
+        slots:
+          entity_id: "all"
+          timer_action: "resume"
+          
+  TimerDuration:
+    data:
+      - sentences:
+          - "quanto (manca|resta|dura) (al|il) timer {entity_id}"
+        slots:
+          entity_id: "null"
+  TimerStart:
+    data:
+#Completo
+      - sentences:
+          - "(avvia|imposta) [un] timer (di|da) {hours} (ora|ore) [e] {minutes} (minuto|minuti) [e] {seconds} secondi"
+#Solo ore
+      - sentences:
+          - "(avvia|imposta) [(un)] timer (di|da) {hours} (ora|ore)"
+        slots:
+          seconds: 0
+          minutes: 0
+#Solo minuti
+      - sentences:
+          - "(avvia|imposta) [un] timer (di|da) {minutes} (minuto|minuti)"
+        slots:
+          seconds: 0
+          hours: 0
+#Solo secondi
+      - sentences:
+          - "(avvia|imposta) [un] timer (di|da) {seconds} (secondo|secondi)"
+        slots:
+          minutes: 0
+          hours: 0
+#Minuti e secondi
+      - sentences:
+          - "(avvia|imposta) [un] timer (di|da) {minutes} minuti [e] {seconds} secondi"
+        slots:
+          hours: 0   
+#Ore e minuti
+      - sentences:
+          - "(avvia|imposta) [un] timer (di|da) {hours} (ora|ore) [e] {minutes} (minuto|minuti)"
+        slots:
+          seconds: 0
+          
+lists:
+  entity_id:
+    values:
+      - in: "(primo|uno|1)"
+        out: "timer.assist_timer1"
+      - in: "(secondo|due|2)"
+        out: "timer.assist_timer2"
+      - in: "(terzo|tre|3)"
+        out: "timer.assist_timer3"
+      - in: "(tutti|ogni)"
+        out: "all"
+  seconds:
+    range:
+      from: 0
+      to: 120    
+  minutes:
+    range:
+      from: 0
+      to: 120
+  hours:
+    range:
+      from: 0
+      to: 24
+      
+responses:
+  intents:
+    TimerStop:
+      default: >
+        {%- set timer_amount = states.timer 
+              | selectattr('state','eq','active') 
+              | selectattr('entity_id','match','timer.assist_timer*')
+              | map(attribute='entity_id') 
+              | list
+              | length -%}
+        {% set mediaplayer = namespace(entity=[]) %}
+        {% for player in states.media_player %}
+          {%- if ((state_attr(player.entity_id, 'media_content_id') |lower != 'none' and state_attr(player.entity_id, 'media_content_id')[:47][38:] == 'Timer.mp3') or state_attr(player.entity_id, 'media_title') | lower == 'timer') and states(player.entity_id) == 'playing' -%}
+            {%- set mediaplayer.entity = player.entity_id -%}
+          {% endif -%}
+        {% endfor %}
+        {% if mediaplayer.entity[:12] == 'media_player' %}
+        {{ (["Capito. ", "Okei. ", "Certo. ", ""] | random) }} fermo il timer.
+        {% elif timer_amount == 0 and
+             (as_timestamp(now()) - as_timestamp(states.timer.assist_timer1.last_changed) > 3 and states('timer.assist_timer1') == 'idle') and 
+             (as_timestamp(now()) - as_timestamp(states.timer.assist_timer2.last_changed) > 3 and states('timer.assist_timer2') == 'idle') and
+             (as_timestamp(now()) - as_timestamp(states.timer.assist_timer3.last_changed) > 3 and states('timer.assist_timer3') == 'idle') %}
+        Non ci sono timer attivi al momento.
+        {% elif (slots_entity_id == 'timer.assist_timer1' and states('timer.assist_timer1') == 'idle') or
+             (slots_entity_id == 'timer.assist_timer2' and states('timer.assist_timer2') == 'idle') or 
+             (slots_entity_id == 'timer.assist_timer3' and states('timer.assist_timer3') == 'idle') %}
+        Il timer non è attivo. 
+        {% elif timer_amount > 1 and slots_entity_id == 'null' %}
+        Ci sono diversi timer attivi.  
+        {{ (["Prego specifichi a quale timer si riferisce.", "Prego di specificare quale timer.", "A quale timer si riferisce?", ""] | random) }}
+        {% elif slots_entity_id == 'all' %}
+        {{ (["Capito. ", "Okei. ", "Certo. ", ""] | random) }} Fermo tutti i timer.
+        {% else %}
+        {{ (["Capito. ", "Okei. ", "Certo. ", ""] | random) }} Timer fermato.
+        {% endif %} 
+    TimerPause:
+      default: >
+        {%- if slots.timer_action is set or slots.timer_action != "" -%}
+          {%- set timer_action = slots.timer_action -%}
+        {%- else -%}
+          {%- set timer_action = "resume" -%}
+        {%- endif -%}
+        {%- set timer_amount = states.timer 
+           | selectattr('state','eq','active') 
+           | selectattr('entity_id','match','timer.assist_timer*')
+           | map(attribute='entity_id') 
+           | list
+           | length -%}
+        {% if timer_amount == 0 %}
+        Non ci sono timer attivi.
+        {% elif timer_amount > 1 and slots.entity_id == 'null' %}
+        Ci sono diversi timer attivi. 
+        {{ (["Prego specifichi a quale timer si riferisce.", "Prego specifichi quale timer.", "A quale timer si riferisce?", ""] | random) }}
+        {% elif slots.entity_id == 'all' %}
+        {{ (["Capito. ", "Okei. ", "Certo. ", ""] | random) }}.
+        {% if timer_action == "pause" %}in pausa{% else %}riavviato{% endif %}.
+        {% elif (as_timestamp(now()) - as_timestamp(states.timer.assist_timer1.last_changed) < 3 and states('timer.assist_timer1') == 'idle') or 
+                (as_timestamp(now()) - as_timestamp(states.timer.assist_timer2.last_changed) < 3 and states('timer.assist_timer2') == 'idle') or
+                (as_timestamp(now()) - as_timestamp(states.timer.assist_timer3.last_changed) < 3 and states('timer.assist_timer3') == 'idle') %}
+        Timer {% if timer_action == "pause" %}in pausa{% else %}riavviato{% endif %}.
+        {% elif (timer_amount == 1 and slots.entity_id == 'null') or
+           (slots.entity_id == 'timer.assist_timer1' and states('timer.assist_timer1') != 'idle') or 
+           (slots.entity_id == 'timer.assist_timer2' and states('timer.assist_timer2') != 'idle') or
+           (slots.entity_id == 'timer.assist_timer3' and states('timer.assist_timer3') != 'idle') %}
+        {{ (["Capito. ", "Okei. ", "Certo. ", ""] | random) }}  Timer {% if timer_action == "pause" %} in pausa {% else %} riavviato {% endif %}.
+        {% else %}
+        Questo timer non è attivo.
+        {% endif %}   
+    TimerDuration:
+      default: >
+        {%- set timer_amount = states.timer 
+           | selectattr('state','eq','active') 
+           | selectattr('entity_id','match','timer.assist_timer*')
+           | map(attribute='entity_id') 
+           | list
+           | length -%}          
+        {% if timer_amount == 0 %}
+        Non ci sono timer attivi.
+        {% else %}
+          {%- if slots.entity_id != 'all' and slots.entity_id != 'null' %}
+          {%- set active_timers = states.timer 
+             | selectattr('state','eq','active') 
+             | selectattr('entity_id','match',slots.entity_id)
+             | list -%}
+          {%- else%}
+          {%- set active_timers = states.timer 
+             | selectattr('state','eq','active') 
+             | selectattr('entity_id','match','timer.assist_timer*')
+             | list -%}
+          {%- endif %}
+          {% if active_timers|length == 0 %}
+            {%- if slots.entity_id != 'all' and slots.entity_id != 'null' %} Il timer non è attivo.
+            {%- else %}Non ci sono timer attivi. {%- endif %}{% elif active_timers|length > 1 %} Ci sono {{active_timers|length }} timer attivi. {% endif %}
+            {% for timer in active_timers %}{%
+             set timer_id = timer.entity_id %}{%
+             set timer_finishes_at = state_attr(timer_id, 'finishes_at') %}{%
+  
+             set time_remaining = as_datetime(timer_finishes_at) - now() %}{%
+             set hours_remaining = time_remaining.total_seconds() // 3600 %}{%
+             set minutes_remaining = (time_remaining.total_seconds() % 3600) // 60 %}{%
+             set seconds_remaining = time_remaining.total_seconds() % 60 %}{%
+             
+             if timer.state == "active" or timer.state == "paused" %}{%
+               if slots.entity_id != timer_id 
+                 %}{{ state_attr(timer_id, 'friendly_name')[9:] }} {%
+                 if timer.state == "paused" %} è in pausa {% endif %} {% else %} (Mancano|Restano) {% endif %}{%
+               if hours_remaining > 0 %}{{ hours_remaining | round }} ore {% endif %}{%
+               if minutes_remaining == 1 %}1 minuto {% endif %}{%
+               if minutes_remaining > 1 %}{{ minutes_remaining | round }} minuti {% endif %}{%
+               if seconds_remaining == 1 and hours_remaining == 0%}1 secondo {% endif %}{%
+               if seconds_remaining > 1 and hours_remaining == 0 %}{{ seconds_remaining | round }} secondi {% endif %}. {%
+             endif %}{%
+             endfor %}
+        {% endif %}
+    TimerStart:
+      default: >
+        {{ (["Capito. ", "Okei. ", "Certo. ", ""] | random) + (["Avvio un timer da ", "Timer avviato.  "] | random)}}{% if (slots.hours | int(default=0)) == 1 %} 1 ora {% elif (slots.hours | int(default=0)) > 1 %}{{ (slots.hours | int)}} ore {% endif %}{% if (slots.hours | int(default=0)) > 0 and ((slots.minutes | int(default=0)) > 0 or (slots.seconds | int(default=0)) > 0) %} e {% endif %}{% if (slots.minutes | int(default=0)) == 1 %} 1 minuto {% elif (slots.minutes | int(default=0)) > 1 %}{{ (slots.minutes | int)}}  minuti {% endif %}{% if (slots.minutes | int(default=0)) > 0 and (slots.seconds | int(default=0)) > 0 %} e {% endif %}{% if (slots.seconds | int(default=0)) == 1 %} 1 secondo {% elif (slots.seconds | int(default=0)) > 1 %}{{ (slots.seconds | int)}} secondi {% endif %}.
