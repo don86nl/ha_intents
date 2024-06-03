@@ -100,17 +100,300 @@ lists:
       - in: "(all|every)"
         out: "all"
   seconds:
-    range:
-      from: 0
-      to: 120    
+    values:
+      - in: "(one|1)"
+        out: 1
+      - in: "(two|2)"
+        out: 2
+      - in: "(three|3)"
+        out: 3
+      - in: "(four|4)"
+        out: 4
+      - in: "(five|5)"
+        out: 5
+      - in: "(six|6)"
+        out: 6
+      - in: "(seven|7)"
+        out: 7
+      - in: "(eight|8)"
+        out: 8
+      - in: "(nine|9)"
+        out: 9
+      - in: "(ten|10)"
+        out: 10
+      - in: "(eleven|11)"
+        out: 11
+      - in: "(twelve|12)"
+        out: 12
+      - in: "(thirteen|13)"
+        out: 13
+      - in: "(fourteen|14)"
+        out: 14
+      - in: "(fifteen|15)"
+        out: 15
+      - in: "(sixteen|16)"
+        out: 16
+      - in: "(seventeen|17)"
+        out: 17
+      - in: "(eighteen|18)"
+        out: 18
+      - in: "(nineteen|19)"
+        out: 19
+      - in: "(twenty|20)"
+        out: 20
+      - in: "(twenty-one|21)"
+        out: 21
+      - in: "(twenty-two|22)"
+        out: 22
+      - in: "(twenty-three|23)"
+        out: 23
+      - in: "(twenty-four|24)"
+        out: 24
+      - in: "(twenty-five|25)"
+        out: 25
+      - in: "(twenty-six|26)"
+        out: 26
+      - in: "(twenty-seven|27)"
+        out: 27
+      - in: "(twenty-eight|28)"
+        out: 28
+      - in: "(twenty-nine|29)"
+        out: 29
+      - in: "(thirty|30)"
+        out: 30
+      - in: "(thirty-one|31)"
+        out: 31
+      - in: "(thirty-two|32)"
+        out: 32
+      - in: "(thirty-three|33)"
+        out: 33
+      - in: "(thirty-four|34)"
+        out: 34
+      - in: "(thirty-five|35)"
+        out: 35
+      - in: "(thirty-six|36)"
+        out: 36
+      - in: "(thirty-seven|37)"
+        out: 37
+      - in: "(thirty-eight|38)"
+        out: 38
+      - in: "(thirty-nine|39)"
+        out: 39
+      - in: "(forty|40)"
+        out: 40
+      - in: "(forty-one|41)"
+        out: 41
+      - in: "(forty-two|42)"
+        out: 42
+      - in: "(forty-three|43)"
+        out: 43
+      - in: "(forty-four|44)"
+        out: 44
+      - in: "(forty-five|45)"
+        out: 45
+      - in: "(forty-six|46)"
+        out: 46
+      - in: "(forty-seven|47)"
+        out: 47
+      - in: "(forty-eight|48)"
+        out: 48
+      - in: "(forty-nine|49)"
+        out: 49
+      - in: "(fifty|50)"
+        out: 50
+      - in: "(fifty-one|51)"
+        out: 51
+      - in: "(fifty-two|52)"
+        out: 52
+      - in: "(fifty-three|53)"
+        out: 53
+      - in: "(fifty-four|54)"
+        out: 54
+      - in: "(fifty-five|55)"
+        out: 55
+      - in: "(fifty-six|56)"
+        out: 56
+      - in: "(fifty-seven|57)"
+        out: 57
+      - in: "(fifty-eight|58)"
+        out: 58
+      - in: "(fifty-nine|59)"
+        out: 59
+      - in: "(sixty|60)"
+        out: 60
+
   minutes:
-    range:
-      from: 0
-      to: 120
+    values:
+      - in: "(one|1)"
+        out: 1
+      - in: "(two|2)"
+        out: 2
+      - in: "(three|3)"
+        out: 3
+      - in: "(four|4)"
+        out: 4
+      - in: "(five|5)"
+        out: 5
+      - in: "(six|6)"
+        out: 6
+      - in: "(seven|7)"
+        out: 7
+      - in: "(eight|8)"
+        out: 8
+      - in: "(nine|9)"
+        out: 9
+      - in: "(ten|10)"
+        out: 10
+      - in: "(eleven|11)"
+        out: 11
+      - in: "(twelve|12)"
+        out: 12
+      - in: "(thirteen|13)"
+        out: 13
+      - in: "(fourteen|14)"
+        out: 14
+      - in: "(fifteen|15)"
+        out: 15
+      - in: "(sixteen|16)"
+        out: 16
+      - in: "(seventeen|17)"
+        out: 17
+      - in: "(eighteen|18)"
+        out: 18
+      - in: "(nineteen|19)"
+        out: 19
+      - in: "(twenty|20)"
+        out: 20
+      - in: "(twenty-one|21)"
+        out: 21
+      - in: "(twenty-two|22)"
+        out: 22
+      - in: "(twenty-three|23)"
+        out: 23
+      - in: "(twenty-four|24)"
+        out: 24
+      - in: "(twenty-five|25)"
+        out: 25
+      - in: "(twenty-six|26)"
+        out: 26
+      - in: "(twenty-seven|27)"
+        out: 27
+      - in: "(twenty-eight|28)"
+        out: 28
+      - in: "(twenty-nine|29)"
+        out: 29
+      - in: "(thirty|30)"
+        out: 30
+      - in: "(thirty-one|31)"
+        out: 31
+      - in: "(thirty-two|32)"
+        out: 32
+      - in: "(thirty-three|33)"
+        out: 33
+      - in: "(thirty-four|34)"
+        out: 34
+      - in: "(thirty-five|35)"
+        out: 35
+      - in: "(thirty-six|36)"
+        out: 36
+      - in: "(thirty-seven|37)"
+        out: 37
+      - in: "(thirty-eight|38)"
+        out: 38
+      - in: "(thirty-nine|39)"
+        out: 39
+      - in: "(forty|40)"
+        out: 40
+      - in: "(forty-one|41)"
+        out: 41
+      - in: "(forty-two|42)"
+        out: 42
+      - in: "(forty-three|43)"
+        out: 43
+      - in: "(forty-four|44)"
+        out: 44
+      - in: "(forty-five|45)"
+        out: 45
+      - in: "(forty-six|46)"
+        out: 46
+      - in: "(forty-seven|47)"
+        out: 47
+      - in: "(forty-eight|48)"
+        out: 48
+      - in: "(forty-nine|49)"
+        out: 49
+      - in: "(fifty|50)"
+        out: 50
+      - in: "(fifty-one|51)"
+        out: 51
+      - in: "(fifty-two|52)"
+        out: 52
+      - in: "(fifty-three|53)"
+        out: 53
+      - in: "(fifty-four|54)"
+        out: 54
+      - in: "(fifty-five|55)"
+        out: 55
+      - in: "(fifty-six|56)"
+        out: 56
+      - in: "(fifty-seven|57)"
+        out: 57
+      - in: "(fifty-eight|58)"
+        out: 58
+      - in: "(fifty-nine|59)"
+        out: 59
+      - in: "(sixty|60)"
+        out: 60
   hours:
-    range:
-      from: 0
-      to: 24
+    values:
+      - in: "(one|1)"
+        out: 1
+      - in: "(two|2)"
+        out: 2
+      - in: "(three|3)"
+        out: 3
+      - in: "(four|4)"
+        out: 4
+      - in: "(five|5)"
+        out: 5
+      - in: "(six|6)"
+        out: 6
+      - in: "(seven|7)"
+        out: 7
+      - in: "(eight|8)"
+        out: 8
+      - in: "(nine|9)"
+        out: 9
+      - in: "(ten|10)"
+        out: 10
+      - in: "(eleven|11)"
+        out: 11
+      - in: "(twelve|12)"
+        out: 12
+      - in: "(thirteen|13)"
+        out: 13
+      - in: "(fourteen|14)"
+        out: 14
+      - in: "(fifteen|15)"
+        out: 15
+      - in: "(sixteen|16)"
+        out: 16
+      - in: "(seventeen|17)"
+        out: 17
+      - in: "(eighteen|18)"
+        out: 18
+      - in: "(nineteen|19)"
+        out: 19
+      - in: "(twenty|20)"
+        out: 20
+      - in: "(twenty-one|21)"
+        out: 21
+      - in: "(twenty-two|22)"
+        out: 22
+      - in: "(twenty-three|23)"
+        out: 23
+      - in: "(twenty-four|24)"
+        out: 24
       
 responses:
   intents:
