@@ -509,7 +509,8 @@ automation:
                     {% endif %}
                   cache: true
                 target:
-                  entity_id: "{{ timer_tts_target == 'tts.speak' }}"      - alias: "Restore device previous volume"
+                  entity_id: "{{ timer_tts_target == 'tts.speak' }}"
+      - alias: "Restore device previous volume"
         service: media_player.volume_set
         data:
           volume_level: "{{ device_volume }}"
